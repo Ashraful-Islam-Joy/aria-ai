@@ -26,6 +26,83 @@
             overflow: hidden;
         }
 
+        /* --- Futuristic Intro Screen CSS --- */
+        #intro-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #0d0714;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        .loader-content {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .intro-avatar {
+            font-size: 42px;
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        .glowing-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            border-top-color: #00d2ff;
+            border-bottom-color: #ff2a70;
+            animation: spin 1.5s linear infinite;
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
+        }
+
+        .intro-title {
+            color: #fff;
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: 5px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #ffffff, #ff758c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .intro-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+            letter-spacing: 1px;
+            font-weight: 400;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(0.9); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+
+        #intro-screen.fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        /* --- Chat Card Entrance Animation --- */
         .chat-card {
             width: 420px;
             height: 680px;
@@ -39,6 +116,14 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .chat-card.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
         }
 
         /* --- Header Section --- */
@@ -246,6 +331,17 @@
 </head>
 <body>
 
+    <!-- Futuristic Intro Screen -->
+    <div id="intro-screen">
+        <div class="loader-content">
+            <div class="glowing-ring"></div>
+            <div class="intro-avatar">🦋</div>
+        </div>
+        <h1 class="intro-title">ARIA</h1>
+        <p class="intro-subtitle">Waking up just for you... 🦋</p>
+    </div>
+
+    <!-- Main Chat UI -->
     <div class="chat-card">
         <!-- Header -->
         <div class="chat-header">
@@ -282,6 +378,21 @@
     </div>
 
     <script>
+        // Intro Screen Animation Trigger
+        window.addEventListener("load", () => {
+            setTimeout(() => {
+                const intro = document.getElementById("intro-screen");
+                const chatCard = document.querySelector(".chat-card");
+
+                intro.classList.add("fade-out");
+                
+                setTimeout(() => {
+                    chatCard.classList.add("visible");
+                }, 300);
+
+            }, 2000); 
+        });
+
         // Directly connect to the live Render WebSocket Backend
         const wsUrl = "wss://aria-ai-eklr.onrender.com/ws/chat";
 
