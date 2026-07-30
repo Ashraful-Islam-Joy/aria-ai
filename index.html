@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aria - AI Companion</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #0f0913;
+            background-image: radial-gradient(circle at 50% 30%, #30142b 0%, #0f0913 70%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .chat-card {
+            width: 420px;
+            height: 680px;
+            background: rgba(30, 18, 33, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 105, 180, 0.15);
+            border-radius: 28px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6),
+                        inset 0 0 15px rgba(255, 255, 255, 0.03);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- Header Section --- */
+        .chat-header {
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .avatar-container {
+            position: relative;
+            width: 50px;
+            height: 50px;
+        }
+
+        .avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff758c, #ff7eb3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 0 15px rgba(255, 117, 140, 0.5);
+        }
+
+        /* Light Blue Dot Status */
+        .status-dot {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 11px;
+            height: 11px;
+            background-color: #00d2ff !important;
+            border: 2px solid #1a101d;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #00d2ff !important;
+        }
+
+        .header-info h2 {
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header-info p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 13px;
+        }
+
+        .status-text-highlight {
+            color: rgba(255, 205, 225, 0.95);
+            font-weight: 500;
+            text-shadow: 0 0 6px rgba(255, 105, 180, 0.4);
+        }
+
+        /* --- Chat Messages Section --- */
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 4px;
+        }
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .message-wrapper {
+            display: flex;
+            flex-direction: column;
+            max-width: 80%;
+        }
+
+        .message-wrapper.user {
+            align-self: flex-end;
+            align-items: flex-end;
+        }
+
+        .message-wrapper.aria {
+            align-self: flex-start;
+            align-items: flex-start;
+        }
+
+        .message {
+            padding: 14px 18px;
+            border-radius: 20px;
+            font-size: 14.5px;
+            line-height: 1.45;
+            word-wrap: break-word;
+        }
+
+        .aria-msg {
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-top-left-radius: 4px;
+        }
+
+        .user-msg {
+            background: linear-gradient(135deg, #ff2a70, #ff4e50);
+            color: #ffffff;
+            border-top-right-radius: 4px;
+            box-shadow: 0 4px 15px rgba(255, 42, 112, 0.3);
+        }
+
+        /* Seen Status */
+        .seen-status {
+            font-size: 10.5px;
+            color: rgba(255, 255, 255, 0.45);
+            margin-top: 4px;
+            margin-right: 4px;
+            font-weight: 500;
+        }
+
+        /* Typing Dots Animation */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 14px 18px;
+        }
+
+        .typing-dot {
+            width: 7px;
+            height: 7px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        /* --- Input Footer Section --- */
+        .chat-footer {
+            padding: 18px 20px 22px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .input-wrapper {
+            flex: 1;
+        }
+
+        .chat-input {
+            width: 100%;
+            padding: 14px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 105, 180, 0.3);
+            border-radius: 30px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input:focus {
+            border-color: #ff4e50;
+            box-shadow: 0 0 12px rgba(255, 78, 80, 0.3);
+        }
+
+        .send-btn {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff4e50, #ff758c);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 12px rgba(255, 78, 80, 0.4);
+        }
+
+        .send-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-card">
+        <!-- Header -->
+        <div class="chat-header">
+            <div class="avatar-container">
+                <div class="avatar">🦋</div>
+                <div class="status-dot"></div>
+            </div>
+            <div class="header-info">
+                <h2>Aria</h2>
+                <p id="headerStatus">AI Companion • <span class="status-text-highlight">Active Now</span> 🦋</p>
+            </div>
+        </div>
+
+        <!-- Chat Area -->
+        <div class="chat-messages" id="chatBox">
+            <div class="message-wrapper aria">
+                <div class="message aria-msg">
+                    Hey Sweetheart ❤️! I am here for you to listen.
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Footer -->
+        <div class="chat-footer">
+            <div class="input-wrapper">
+                <input type="text" id="userInput" class="chat-input" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
+            </div>
+            <button class="send-btn" onclick="sendMessage()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Directly connect to the live Render WebSocket Backend
+        const wsUrl = "wss://aria-ai-eklr.onrender.com/ws/chat";
+
+        const ws = new WebSocket(wsUrl);
+        const chatBox = document.getElementById("chatBox");
+        const userInput = document.getElementById("userInput");
+        let typingElement = null;
+
+        ws.onmessage = function(event) {
+            removeTypingIndicator();
+            markLastMessageSeen();
+            appendAriaMessage(event.data);
+        };
+
+        function sendMessage() {
+            const message = userInput.value.trim();
+            if (message !== "") {
+                appendUserMessage(message);
+                ws.send(message);
+                userInput.value = "";
+                showTypingIndicator();
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === "Enter") {
+                sendMessage();
+            }
+        }
+
+        function appendUserMessage(text) {
+            document.querySelectorAll('.seen-status').forEach(e => e.remove());
+
+            const wrapper = document.createElement("div");
+            wrapper.classList.add("message-wrapper", "user");
+            wrapper.innerHTML = `<div class="message user-msg">${escapeHtml(text)}</div>`;
+            
+            chatBox.appendChild(wrapper);
+            scrollToBottom();
+        }
+
+        function markLastMessageSeen() {
+            const lastUserMsg = chatBox.querySelector(".message-wrapper.user:last-of-type");
+            if (lastUserMsg && !lastUserMsg.querySelector('.seen-status')) {
+                const seenDiv = document.createElement("div");
+                seenDiv.classList.add("seen-status");
+                seenDiv.innerText = "Seen ✓";
+                lastUserMsg.appendChild(seenDiv);
+            }
+        }
+
+        function appendAriaMessage(text) {
+            const wrapper = document.createElement("div");
+            wrapper.classList.add("message-wrapper", "aria");
+            wrapper.innerHTML = `<div class="message aria-msg">${escapeHtml(text)}</div>`;
+            
+            chatBox.appendChild(wrapper);
+            scrollToBottom();
+        }
+
+        function showTypingIndicator() {
+            if (typingElement) return;
+
+            typingElement = document.createElement("div");
+            typingElement.classList.add("message-wrapper", "aria");
+            typingElement.id = "typingBubble";
+            typingElement.innerHTML = `
+                <div class="message aria-msg typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            chatBox.appendChild(typingElement);
+            scrollToBottom();
+        }
+
+        function removeTypingIndicator() {
+            if (typingElement) {
+                typingElement.remove();
+                typingElement = null;
+            }
+        }
+
+        function scrollToBottom() {
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+    </script>
+</body>
+</html>
