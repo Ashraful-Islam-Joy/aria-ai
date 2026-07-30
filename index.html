@@ -15,15 +15,72 @@
         /* --- Updated Premium Ambient Background --- */
         body {
             background: #0d0714;
-            background-image: 
-                radial-gradient(circle at 20% 20%, rgba(255, 42, 112, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 80% 80%, rgba(0, 210, 255, 0.08) 0%, transparent 40%),
-                radial-gradient(circle at 50% 50%, #200c24 0%, #0d0714 80%);
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             overflow: hidden;
+            position: relative;
+        }
+
+        /* --- Floating Background Glowing Particles --- */
+        .ambient-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.5;
+            animation: floatOrb 8s infinite alternate ease-in-out;
+        }
+
+        .orb-1 {
+            width: 320px;
+            height: 320px;
+            background: radial-gradient(circle, #ff2a70, transparent);
+            top: 10%;
+            left: 10%;
+            animation-duration: 9s;
+        }
+
+        .orb-2 {
+            width: 380px;
+            height: 380px;
+            background: radial-gradient(circle, #00d2ff, transparent);
+            bottom: 10%;
+            right: 10%;
+            animation-duration: 11s;
+        }
+
+        .orb-3 {
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, #9b51e0, transparent);
+            top: 40%;
+            right: 25%;
+            animation-duration: 7s;
+        }
+
+        .orb-4 {
+            width: 280px;
+            height: 280px;
+            background: radial-gradient(circle, #ff758c, transparent);
+            bottom: 30%;
+            left: 20%;
+            animation-duration: 10s;
+        }
+
+        @keyframes floatOrb {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(40px, -30px) scale(1.15); }
+            100% { transform: translate(-30px, 40px) scale(0.9); }
         }
 
         /* --- Futuristic Intro Screen CSS --- */
@@ -33,7 +90,8 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: #0d0714;
+            background: rgba(13, 7, 20, 0.85);
+            backdrop-filter: blur(20px);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -44,17 +102,18 @@
 
         .loader-content {
             position: relative;
-            width: 100px;
-            height: 100px;
+            width: 110px;
+            height: 110px;
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 22px;
         }
 
         .intro-avatar {
-            font-size: 42px;
+            font-size: 45px;
             animation: pulse 2s infinite ease-in-out;
+            filter: drop-shadow(0 0 10px rgba(0, 210, 255, 0.6));
         }
 
         .glowing-ring {
@@ -64,25 +123,27 @@
             border-radius: 50%;
             border: 3px solid transparent;
             border-top-color: #00d2ff;
-            border-bottom-color: #ff2a70;
-            animation: spin 1.5s linear infinite;
-            box-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
+            border-right-color: #ff2a70;
+            border-bottom-color: #ff758c;
+            animation: spin 1.4s linear infinite;
+            box-shadow: 0 0 25px rgba(0, 210, 255, 0.5);
         }
 
         .intro-title {
             color: #fff;
-            font-size: 32px;
-            font-weight: 700;
-            letter-spacing: 5px;
+            font-size: 34px;
+            font-weight: 800;
+            letter-spacing: 6px;
             margin-bottom: 8px;
-            background: linear-gradient(135deg, #ffffff, #ff758c);
+            background: linear-gradient(135deg, #ffffff, #ff758c, #00d2ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(255, 117, 140, 0.3);
         }
 
         .intro-subtitle {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 13px;
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 13.5px;
             letter-spacing: 1px;
             font-weight: 400;
         }
@@ -93,8 +154,8 @@
         }
 
         @keyframes pulse {
-            0%, 100% { transform: scale(0.9); opacity: 0.8; }
-            50% { transform: scale(1.1); opacity: 1; }
+            0%, 100% { transform: scale(0.92); opacity: 0.85; }
+            50% { transform: scale(1.12); opacity: 1; }
         }
 
         #intro-screen.fade-out {
@@ -102,14 +163,37 @@
             visibility: hidden;
         }
 
+        /* --- Global Footer Developer Credit --- */
+        .developer-credit {
+            position: fixed;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 1.5px;
+            z-index: 10000;
+            pointer-events: none;
+            font-weight: 400;
+            text-transform: uppercase;
+        }
+
+        .developer-credit span {
+            color: #00d2ff;
+            font-weight: 600;
+            text-shadow: 0 0 8px rgba(0, 210, 255, 0.6);
+        }
+
         /* --- Chat Card Entrance Animation --- */
         .chat-card {
+            position: relative;
+            z-index: 10;
             width: 420px;
             height: 680px;
             background: rgba(26, 15, 29, 0.75);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 28px;
             box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7),
                         inset 0 0 20px rgba(255, 255, 255, 0.02);
@@ -331,6 +415,14 @@
 </head>
 <body>
 
+    <!-- Animated Ambient Background Glowing Orbs -->
+    <div class="ambient-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
+    </div>
+
     <!-- Futuristic Intro Screen -->
     <div id="intro-screen">
         <div class="loader-content">
@@ -339,6 +431,11 @@
         </div>
         <h1 class="intro-title">ARIA</h1>
         <p class="intro-subtitle">Waking up just for you... 🦋</p>
+    </div>
+
+    <!-- Developer Credit at Bottom -->
+    <div class="developer-credit">
+        Crafted with ❤️ by <span>Ashraful</span>
     </div>
 
     <!-- Main Chat UI -->
