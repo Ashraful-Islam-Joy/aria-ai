@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- interactive-widget=resizes-content helps mobile browsers handle keyboards -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
     <title>Aria - AI Companion</title>
     <style>
@@ -18,7 +17,7 @@
             height: 100%;
             overflow: hidden;
             background: #0d0714;
-            position: fixed; /* Prevents whole-page bouncing on mobile */
+            position: fixed;
         }
 
         body {
@@ -27,7 +26,7 @@
             align-items: center;
         }
 
-        /* --- Floating Background Glowing Particles --- */
+        /* --- Ambient Particles --- */
         .ambient-bg {
             position: absolute;
             width: 100%;
@@ -45,41 +44,10 @@
             animation: floatOrb 8s infinite alternate ease-in-out;
         }
 
-        .orb-1 {
-            width: 320px;
-            height: 320px;
-            background: radial-gradient(circle, #ff2a70, transparent);
-            top: 10%;
-            left: 10%;
-            animation-duration: 9s;
-        }
-
-        .orb-2 {
-            width: 380px;
-            height: 380px;
-            background: radial-gradient(circle, #00d2ff, transparent);
-            bottom: 10%;
-            right: 10%;
-            animation-duration: 11s;
-        }
-
-        .orb-3 {
-            width: 250px;
-            height: 250px;
-            background: radial-gradient(circle, #9b51e0, transparent);
-            top: 40%;
-            right: 25%;
-            animation-duration: 7s;
-        }
-
-        .orb-4 {
-            width: 280px;
-            height: 280px;
-            background: radial-gradient(circle, #ff758c, transparent);
-            bottom: 30%;
-            left: 20%;
-            animation-duration: 10s;
-        }
+        .orb-1 { width: 320px; height: 320px; background: radial-gradient(circle, #ff2a70, transparent); top: 10%; left: 10%; animation-duration: 9s; }
+        .orb-2 { width: 380px; height: 380px; background: radial-gradient(circle, #00d2ff, transparent); bottom: 10%; right: 10%; animation-duration: 11s; }
+        .orb-3 { width: 250px; height: 250px; background: radial-gradient(circle, #9b51e0, transparent); top: 40%; right: 25%; animation-duration: 7s; }
+        .orb-4 { width: 280px; height: 280px; background: radial-gradient(circle, #ff758c, transparent); bottom: 30%; left: 20%; animation-duration: 10s; }
 
         @keyframes floatOrb {
             0% { transform: translate(0, 0) scale(1); }
@@ -87,7 +55,7 @@
             100% { transform: translate(-30px, 40px) scale(0.9); }
         }
 
-        /* --- Futuristic Intro Screen CSS --- */
+        /* --- Intro Screen --- */
         #intro-screen {
             position: fixed;
             top: 0;
@@ -152,57 +120,28 @@
             font-weight: 400;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(0.92); opacity: 0.85; }
-            50% { transform: scale(1.12); opacity: 1; }
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { transform: scale(0.92); opacity: 0.85; } 50% { transform: scale(1.12); opacity: 1; } }
 
         #intro-screen.fade-out {
             opacity: 0;
             visibility: hidden;
         }
 
-        /* --- Global Footer Developer Credit --- */
-        .developer-credit {
-            position: fixed;
-            bottom: 8px;
-            width: 100%;
-            text-align: center;
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.4);
-            letter-spacing: 1.5px;
-            z-index: 10000;
-            pointer-events: none;
-            font-weight: 400;
-            text-transform: uppercase;
-        }
-
-        .developer-credit span {
-            color: #00d2ff;
-            font-weight: 600;
-            text-shadow: 0 0 8px rgba(0, 210, 255, 0.6);
-        }
-
-        /* --- Responsive Mobile Optimized Chat Card --- */
+        /* --- Chat Card --- */
         .chat-card {
             position: relative;
             z-index: 10;
             width: 420px;
             max-width: 100%;
             height: 680px;
-            max-height: calc(100% - 30px);
-            background: rgba(26, 15, 29, 0.75);
+            max-height: 100%;
+            background: rgba(26, 15, 29, 0.85);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 28px;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7),
-                        inset 0 0 20px rgba(255, 255, 255, 0.02);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -211,17 +150,12 @@
             transition: opacity 0.8s ease, transform 0.8s ease;
         }
 
-        /* Mobile layout optimization */
         @media (max-width: 480px) {
             .chat-card {
                 width: 100%;
                 height: 100%;
-                max-height: 100%;
                 border-radius: 0;
                 border: none;
-            }
-            .developer-credit {
-                display: none;
             }
         }
 
@@ -285,10 +219,9 @@
         .status-text-highlight {
             color: rgba(255, 255, 255, 0.85);
             font-weight: 500;
-            letter-spacing: 0.3px;
         }
 
-        /* --- Chat Messages Section --- */
+        /* --- Messages Section --- */
         .chat-messages {
             flex: 1;
             padding: 16px;
@@ -296,14 +229,6 @@
             display: flex;
             flex-direction: column;
             gap: 14px;
-        }
-
-        .chat-messages::-webkit-scrollbar {
-            width: 4px;
-        }
-        .chat-messages::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
         }
 
         .message-wrapper {
@@ -375,14 +300,20 @@
             40% { transform: scale(1); }
         }
 
-        /* --- Input Footer Section --- */
+        /* --- Footer Section --- */
+        .chat-footer-container {
+            display: flex;
+            flex-direction: column;
+            background: rgba(0, 0, 0, 0.4);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            flex-shrink: 0;
+        }
+
         .chat-footer {
-            padding: 12px 14px 14px 14px;
+            padding: 10px 14px;
             display: flex;
             align-items: center;
             gap: 10px;
-            background: rgba(0, 0, 0, 0.35);
-            flex-shrink: 0;
         }
 
         .input-wrapper {
@@ -417,18 +348,30 @@
             align-items: center;
             justify-content: center;
             box-shadow: 0 0 12px rgba(255, 78, 80, 0.4);
-            transition: transform 0.2s ease;
             flex-shrink: 0;
-        }
-
-        .send-btn:active {
-            transform: scale(0.92);
         }
 
         .send-btn svg {
             width: 18px;
             height: 18px;
             fill: #fff;
+        }
+
+        /* Fixed Developer Credit Below Input */
+        .developer-credit-inline {
+            padding-bottom: 6px;
+            text-align: center;
+            font-size: 10.5px;
+            color: rgba(255, 255, 255, 0.45);
+            letter-spacing: 1.2px;
+            font-weight: 400;
+            text-transform: uppercase;
+        }
+
+        .developer-credit-inline span {
+            color: #00d2ff;
+            font-weight: 600;
+            text-shadow: 0 0 6px rgba(0, 210, 255, 0.6);
         }
     </style>
 </head>
@@ -450,10 +393,6 @@
         <p class="intro-subtitle">Waking up just for you... 🦋</p>
     </div>
 
-    <div class="developer-credit">
-        Crafted with ❤️ by <span>Ashraful</span>
-    </div>
-
     <div class="chat-card">
         <div class="chat-header">
             <div class="avatar-container">
@@ -462,7 +401,7 @@
             </div>
             <div class="header-info">
                 <h2>Aria</h2>
-                <p id="headerStatus">AI Companion • <span class="status-text-highlight">Active Now</span> 🦋</p>
+                <p id="headerStatus">AI Companion • <span class="status-text-highlight" id="statusText">Connecting...</span> 🦋</p>
             </div>
         </div>
 
@@ -474,71 +413,98 @@
             </div>
         </div>
 
-        <div class="chat-footer">
-            <div class="input-wrapper">
-                <input type="text" id="userInput" class="chat-input" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
+        <div class="chat-footer-container">
+            <div class="chat-footer">
+                <div class="input-wrapper">
+                    <input type="text" id="userInput" class="chat-input" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
+                </div>
+                <button class="send-btn" onclick="sendMessage()">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                    </svg>
+                </button>
             </div>
-            <button class="send-btn" onclick="sendMessage()">
-                <svg viewBox="0 0 24 24">
-                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-                </svg>
-            </button>
+            <div class="developer-credit-inline">
+                Crafted with ❤️ by <span>Ashraful</span>
+            </div>
         </div>
     </div>
 
     <script>
-        // Intro Screen Animation
+        // Intro Animation
         window.addEventListener("load", () => {
             setTimeout(() => {
                 const intro = document.getElementById("intro-screen");
                 const chatCard = document.querySelector(".chat-card");
 
                 intro.classList.add("fade-out");
-                
-                setTimeout(() => {
-                    chatCard.classList.add("visible");
-                }, 300);
-
+                setTimeout(() => { chatCard.classList.add("visible"); }, 300);
             }, 2000); 
         });
 
-        // Dynamic Visual Viewport Resize Logic (Fixes Mobile Keyboard Issue in In-App Browsers)
+        // Responsive Viewport Resize
         if (window.visualViewport) {
             function updateViewport() {
-                const height = window.visualViewport.height;
-                document.body.style.height = height + "px";
+                document.body.style.height = window.visualViewport.height + "px";
                 scrollToBottom();
             }
-
             window.visualViewport.addEventListener("resize", updateViewport);
             window.visualViewport.addEventListener("scroll", updateViewport);
             updateViewport();
         }
 
+        // Robust WebSocket Manager with Auto-Reconnect
         const wsUrl = "wss://aria-ai-eklr.onrender.com/ws/chat";
-        const ws = new WebSocket(wsUrl);
+        let ws = null;
         const chatBox = document.getElementById("chatBox");
         const userInput = document.getElementById("userInput");
+        const statusText = document.getElementById("statusText");
         let typingElement = null;
+
+        function connectWebSocket() {
+            statusText.innerText = "Connecting...";
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = function() {
+                statusText.innerText = "Active Now";
+            };
+
+            ws.onmessage = function(event) {
+                removeTypingIndicator();
+                markLastMessageSeen();
+                appendAriaMessage(event.data);
+            };
+
+            ws.onerror = function() {
+                statusText.innerText = "Connecting...";
+            };
+
+            ws.onclose = function() {
+                statusText.innerText = "Reconnecting...";
+                setTimeout(connectWebSocket, 3000); // Auto reconnect after 3s
+            };
+        }
+
+        connectWebSocket();
 
         userInput.addEventListener("focus", () => {
             setTimeout(scrollToBottom, 300);
         });
 
-        ws.onmessage = function(event) {
-            removeTypingIndicator();
-            markLastMessageSeen();
-            appendAriaMessage(event.data);
-        };
-
         function sendMessage() {
             const message = userInput.value.trim();
-            if (message !== "") {
-                appendUserMessage(message);
-                ws.send(message);
-                userInput.value = "";
-                showTypingIndicator();
+            if (message === "") return;
+
+            // Check if WebSocket is OPEN
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                alert("Connection is still initializing. Please wait a second!");
+                return;
             }
+
+            appendUserMessage(message);
+            ws.send(message);
+                userInput.value = "";
+            showTypingIndicator();
         }
 
         function handleKeyPress(event) {
