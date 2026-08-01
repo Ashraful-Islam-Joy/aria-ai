@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aria - AI Companion</title>
     <style>
         * {
@@ -12,21 +12,18 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        html, body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #0d0714;
-            position: fixed;
-        }
-
+        /* --- Updated Premium Ambient Background --- */
         body {
+            background: #0d0714;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            overflow: hidden;
+            position: relative;
         }
 
-        /* --- Ambient Particles --- */
+        /* --- Floating Background Glowing Particles --- */
         .ambient-bg {
             position: absolute;
             width: 100%;
@@ -44,10 +41,41 @@
             animation: floatOrb 8s infinite alternate ease-in-out;
         }
 
-        .orb-1 { width: 320px; height: 320px; background: radial-gradient(circle, #ff2a70, transparent); top: 10%; left: 10%; animation-duration: 9s; }
-        .orb-2 { width: 380px; height: 380px; background: radial-gradient(circle, #00d2ff, transparent); bottom: 10%; right: 10%; animation-duration: 11s; }
-        .orb-3 { width: 250px; height: 250px; background: radial-gradient(circle, #9b51e0, transparent); top: 40%; right: 25%; animation-duration: 7s; }
-        .orb-4 { width: 280px; height: 280px; background: radial-gradient(circle, #ff758c, transparent); bottom: 30%; left: 20%; animation-duration: 10s; }
+        .orb-1 {
+            width: 320px;
+            height: 320px;
+            background: radial-gradient(circle, #ff2a70, transparent);
+            top: 10%;
+            left: 10%;
+            animation-duration: 9s;
+        }
+
+        .orb-2 {
+            width: 380px;
+            height: 380px;
+            background: radial-gradient(circle, #00d2ff, transparent);
+            bottom: 10%;
+            right: 10%;
+            animation-duration: 11s;
+        }
+
+        .orb-3 {
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, #9b51e0, transparent);
+            top: 40%;
+            right: 25%;
+            animation-duration: 7s;
+        }
+
+        .orb-4 {
+            width: 280px;
+            height: 280px;
+            background: radial-gradient(circle, #ff758c, transparent);
+            bottom: 30%;
+            left: 20%;
+            animation-duration: 10s;
+        }
 
         @keyframes floatOrb {
             0% { transform: translate(0, 0) scale(1); }
@@ -55,13 +83,13 @@
             100% { transform: translate(-30px, 40px) scale(0.9); }
         }
 
-        /* --- Intro Screen --- */
+        /* --- Futuristic Intro Screen CSS --- */
         #intro-screen {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             background: rgba(13, 7, 20, 0.85);
             backdrop-filter: blur(20px);
             display: flex;
@@ -120,43 +148,61 @@
             font-weight: 400;
         }
 
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes pulse { 0%, 100% { transform: scale(0.92); opacity: 0.85; } 50% { transform: scale(1.12); opacity: 1; } }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(0.92); opacity: 0.85; }
+            50% { transform: scale(1.12); opacity: 1; }
+        }
 
         #intro-screen.fade-out {
             opacity: 0;
             visibility: hidden;
         }
 
-        /* --- Chat Card --- */
+        /* --- Global Footer Developer Credit --- */
+        .developer-credit {
+            position: fixed;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 1.5px;
+            z-index: 10000;
+            pointer-events: none;
+            font-weight: 400;
+            text-transform: uppercase;
+        }
+
+        .developer-credit span {
+            color: #00d2ff;
+            font-weight: 600;
+            text-shadow: 0 0 8px rgba(0, 210, 255, 0.6);
+        }
+
+        /* --- Chat Card Entrance Animation --- */
         .chat-card {
             position: relative;
             z-index: 10;
             width: 420px;
-            max-width: 100%;
             height: 680px;
-            max-height: 100%;
-            background: rgba(26, 15, 29, 0.85);
+            background: rgba(26, 15, 29, 0.75);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 28px;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7),
+                        inset 0 0 20px rgba(255, 255, 255, 0.02);
             display: flex;
             flex-direction: column;
             overflow: hidden;
             opacity: 0;
             transform: translateY(30px) scale(0.95);
-            transition: opacity 0.8s ease, transform 0.8s ease;
-        }
-
-        @media (max-width: 480px) {
-            .chat-card {
-                width: 100%;
-                height: 100%;
-                border-radius: 0;
-                border: none;
-            }
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .chat-card.visible {
@@ -166,19 +212,18 @@
 
         /* --- Header Section --- */
         .chat-header {
-            padding: 14px 18px;
+            padding: 20px 24px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.06);
             background: rgba(255, 255, 255, 0.02);
-            flex-shrink: 0;
         }
 
         .avatar-container {
             position: relative;
-            width: 44px;
-            height: 44px;
+            width: 50px;
+            height: 50px;
         }
 
         .avatar {
@@ -189,10 +234,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
+            font-size: 24px;
             box-shadow: 0 0 15px rgba(255, 117, 140, 0.4);
         }
 
+        /* --- Soft Blue Status Dot --- */
         .status-dot {
             position: absolute;
             bottom: 2px;
@@ -207,34 +253,44 @@
 
         .header-info h2 {
             color: #ffffff;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 600;
         }
 
         .header-info p {
             color: rgba(255, 255, 255, 0.6);
-            font-size: 12px;
+            font-size: 13px;
         }
 
+        /* --- Soft White Active Now Text --- */
         .status-text-highlight {
             color: rgba(255, 255, 255, 0.85);
             font-weight: 500;
+            letter-spacing: 0.3px;
         }
 
-        /* --- Messages Section --- */
+        /* --- Chat Messages Section --- */
         .chat-messages {
             flex: 1;
-            padding: 16px;
+            padding: 20px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 16px;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 4px;
+        }
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
         }
 
         .message-wrapper {
             display: flex;
             flex-direction: column;
-            max-width: 82%;
+            max-width: 80%;
         }
 
         .message-wrapper.user {
@@ -248,9 +304,9 @@
         }
 
         .message {
-            padding: 12px 16px;
+            padding: 14px 18px;
             border-radius: 20px;
-            font-size: 14px;
+            font-size: 14.5px;
             line-height: 1.45;
             word-wrap: break-word;
         }
@@ -269,19 +325,21 @@
             box-shadow: 0 4px 15px rgba(255, 42, 112, 0.3);
         }
 
+        /* Seen Status */
         .seen-status {
-            font-size: 10px;
+            font-size: 10.5px;
             color: rgba(255, 255, 255, 0.45);
-            margin-top: 3px;
+            margin-top: 4px;
             margin-right: 4px;
             font-weight: 500;
         }
 
+        /* Typing Dots Animation */
         .typing-indicator {
             display: flex;
             align-items: center;
             gap: 5px;
-            padding: 12px 16px;
+            padding: 14px 18px;
         }
 
         .typing-dot {
@@ -300,20 +358,13 @@
             40% { transform: scale(1); }
         }
 
-        /* --- Footer Section --- */
-        .chat-footer-container {
-            display: flex;
-            flex-direction: column;
-            background: rgba(0, 0, 0, 0.4);
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            flex-shrink: 0;
-        }
-
+        /* --- Input Footer Section --- */
         .chat-footer {
-            padding: 10px 14px;
+            padding: 18px 20px 22px 20px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.15);
         }
 
         .input-wrapper {
@@ -322,8 +373,8 @@
 
         .chat-input {
             width: 100%;
-            padding: 12px 18px;
-            background: rgba(0, 0, 0, 0.4);
+            padding: 14px 20px;
+            background: rgba(0, 0, 0, 0.35);
             border: 1px solid rgba(255, 105, 180, 0.25);
             border-radius: 30px;
             color: #fff;
@@ -338,8 +389,8 @@
         }
 
         .send-btn {
-            width: 42px;
-            height: 42px;
+            width: 46px;
+            height: 46px;
             border-radius: 50%;
             background: linear-gradient(135deg, #ff4e50, #ff758c);
             border: none;
@@ -348,35 +399,23 @@
             align-items: center;
             justify-content: center;
             box-shadow: 0 0 12px rgba(255, 78, 80, 0.4);
-            flex-shrink: 0;
+            transition: transform 0.2s ease;
+        }
+
+        .send-btn:active {
+            transform: scale(0.92);
         }
 
         .send-btn svg {
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
             fill: #fff;
-        }
-
-        /* Fixed Developer Credit Below Input */
-        .developer-credit-inline {
-            padding-bottom: 6px;
-            text-align: center;
-            font-size: 10.5px;
-            color: rgba(255, 255, 255, 0.45);
-            letter-spacing: 1.2px;
-            font-weight: 400;
-            text-transform: uppercase;
-        }
-
-        .developer-credit-inline span {
-            color: #00d2ff;
-            font-weight: 600;
-            text-shadow: 0 0 6px rgba(0, 210, 255, 0.6);
         }
     </style>
 </head>
 <body>
 
+    <!-- Animated Ambient Background Glowing Orbs -->
     <div class="ambient-bg">
         <div class="orb orb-1"></div>
         <div class="orb orb-2"></div>
@@ -384,6 +423,7 @@
         <div class="orb orb-4"></div>
     </div>
 
+    <!-- Futuristic Intro Screen -->
     <div id="intro-screen">
         <div class="loader-content">
             <div class="glowing-ring"></div>
@@ -393,7 +433,14 @@
         <p class="intro-subtitle">Waking up just for you... 🦋</p>
     </div>
 
+    <!-- Developer Credit at Bottom -->
+    <div class="developer-credit">
+        Crafted with ❤️ by <span>Ashraful</span>
+    </div>
+
+    <!-- Main Chat UI -->
     <div class="chat-card">
+        <!-- Header -->
         <div class="chat-header">
             <div class="avatar-container">
                 <div class="avatar">🦋</div>
@@ -401,10 +448,11 @@
             </div>
             <div class="header-info">
                 <h2>Aria</h2>
-                <p id="headerStatus">AI Companion • <span class="status-text-highlight" id="statusText">Connecting...</span> 🦋</p>
+                <p id="headerStatus">AI Companion • <span class="status-text-highlight">Active Now</span> 🦋</p>
             </div>
         </div>
 
+        <!-- Chat Area -->
         <div class="chat-messages" id="chatBox">
             <div class="message-wrapper aria">
                 <div class="message aria-msg">
@@ -413,98 +461,57 @@
             </div>
         </div>
 
-        <div class="chat-footer-container">
-            <div class="chat-footer">
-                <div class="input-wrapper">
-                    <input type="text" id="userInput" class="chat-input" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
-                </div>
-                <button class="send-btn" onclick="sendMessage()">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-                    </svg>
-                </button>
+        <!-- Input Footer -->
+        <div class="chat-footer">
+            <div class="input-wrapper">
+                <input type="text" id="userInput" class="chat-input" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
             </div>
-            <div class="developer-credit-inline">
-                Crafted with ❤️ by <span>Ashraful</span>
-            </div>
+            <button class="send-btn" onclick="sendMessage()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+            </button>
         </div>
     </div>
 
     <script>
-        // Intro Animation
+        // Intro Screen Animation Trigger
         window.addEventListener("load", () => {
             setTimeout(() => {
                 const intro = document.getElementById("intro-screen");
                 const chatCard = document.querySelector(".chat-card");
 
                 intro.classList.add("fade-out");
-                setTimeout(() => { chatCard.classList.add("visible"); }, 300);
+                
+                setTimeout(() => {
+                    chatCard.classList.add("visible");
+                }, 300);
+
             }, 2000); 
         });
 
-        // Responsive Viewport Resize
-        if (window.visualViewport) {
-            function updateViewport() {
-                document.body.style.height = window.visualViewport.height + "px";
-                scrollToBottom();
-            }
-            window.visualViewport.addEventListener("resize", updateViewport);
-            window.visualViewport.addEventListener("scroll", updateViewport);
-            updateViewport();
-        }
-
-        // Robust WebSocket Manager with Auto-Reconnect
+        // Directly connect to the live Render WebSocket Backend
         const wsUrl = "wss://aria-ai-eklr.onrender.com/ws/chat";
-        let ws = null;
+
+        const ws = new WebSocket(wsUrl);
         const chatBox = document.getElementById("chatBox");
         const userInput = document.getElementById("userInput");
-        const statusText = document.getElementById("statusText");
         let typingElement = null;
 
-        function connectWebSocket() {
-            statusText.innerText = "Connecting...";
-            ws = new WebSocket(wsUrl);
-
-            ws.onopen = function() {
-                statusText.innerText = "Active Now";
-            };
-
-            ws.onmessage = function(event) {
-                removeTypingIndicator();
-                markLastMessageSeen();
-                appendAriaMessage(event.data);
-            };
-
-            ws.onerror = function() {
-                statusText.innerText = "Connecting...";
-            };
-
-            ws.onclose = function() {
-                statusText.innerText = "Reconnecting...";
-                setTimeout(connectWebSocket, 3000); // Auto reconnect after 3s
-            };
-        }
-
-        connectWebSocket();
-
-        userInput.addEventListener("focus", () => {
-            setTimeout(scrollToBottom, 300);
-        });
+        ws.onmessage = function(event) {
+            removeTypingIndicator();
+            markLastMessageSeen();
+            appendAriaMessage(event.data);
+        };
 
         function sendMessage() {
             const message = userInput.value.trim();
-            if (message === "") return;
-
-            // Check if WebSocket is OPEN
-            if (!ws || ws.readyState !== WebSocket.OPEN) {
-                alert("Connection is still initializing. Please wait a second!");
-                return;
-            }
-
-            appendUserMessage(message);
-            ws.send(message);
+            if (message !== "") {
+                appendUserMessage(message);
+                ws.send(message);
                 userInput.value = "";
-            showTypingIndicator();
+                showTypingIndicator();
+            }
         }
 
         function handleKeyPress(event) {
