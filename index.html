@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- interactive-widget=resizes-content helps mobile browsers handle keyboards -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
     <title>Aria - AI Companion</title>
     <style>
         * {
@@ -12,16 +13,18 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* --- Dynamic Viewport for Mobile Keyboards --- */
-        body {
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
             background: #0d0714;
-            height: 100vh;
-            height: 100dvh; /* Dynamic Height for Mobile Browsers */
+            position: fixed; /* Prevents whole-page bouncing on mobile */
+        }
+
+        body {
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
-            position: relative;
         }
 
         /* --- Floating Background Glowing Particles --- */
@@ -89,9 +92,8 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
-            height: 100dvh;
+            width: 100%;
+            height: 100%;
             background: rgba(13, 7, 20, 0.85);
             backdrop-filter: blur(20px);
             display: flex;
@@ -193,7 +195,7 @@
             width: 420px;
             max-width: 100%;
             height: 680px;
-            max-height: calc(100dvh - 35px);
+            max-height: calc(100% - 30px);
             background: rgba(26, 15, 29, 0.75);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
@@ -206,20 +208,17 @@
             overflow: hidden;
             opacity: 0;
             transform: translateY(30px) scale(0.95);
-            transition: opacity 1s ease, transform 1s ease;
+            transition: opacity 0.8s ease, transform 0.8s ease;
         }
 
-        /* Mobile specific adjustment for full height */
+        /* Mobile layout optimization */
         @media (max-width: 480px) {
             .chat-card {
                 width: 100%;
-                height: 100dvh;
-                max-height: 100dvh;
+                height: 100%;
+                max-height: 100%;
                 border-radius: 0;
                 border: none;
-            }
-            body {
-                padding: 0;
             }
             .developer-credit {
                 display: none;
@@ -233,10 +232,10 @@
 
         /* --- Header Section --- */
         .chat-header {
-            padding: 16px 20px;
+            padding: 14px 18px;
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.06);
             background: rgba(255, 255, 255, 0.02);
             flex-shrink: 0;
@@ -244,8 +243,8 @@
 
         .avatar-container {
             position: relative;
-            width: 46px;
-            height: 46px;
+            width: 44px;
+            height: 44px;
         }
 
         .avatar {
@@ -260,7 +259,6 @@
             box-shadow: 0 0 15px rgba(255, 117, 140, 0.4);
         }
 
-        /* --- Soft Blue Status Dot --- */
         .status-dot {
             position: absolute;
             bottom: 2px;
@@ -275,16 +273,15 @@
 
         .header-info h2 {
             color: #ffffff;
-            font-size: 17px;
+            font-size: 16px;
             font-weight: 600;
         }
 
         .header-info p {
             color: rgba(255, 255, 255, 0.6);
-            font-size: 12.5px;
+            font-size: 12px;
         }
 
-        /* --- Soft White Active Now Text --- */
         .status-text-highlight {
             color: rgba(255, 255, 255, 0.85);
             font-weight: 500;
@@ -347,7 +344,6 @@
             box-shadow: 0 4px 15px rgba(255, 42, 112, 0.3);
         }
 
-        /* Seen Status */
         .seen-status {
             font-size: 10px;
             color: rgba(255, 255, 255, 0.45);
@@ -356,7 +352,6 @@
             font-weight: 500;
         }
 
-        /* Typing Dots Animation */
         .typing-indicator {
             display: flex;
             align-items: center;
@@ -382,11 +377,11 @@
 
         /* --- Input Footer Section --- */
         .chat-footer {
-            padding: 14px 16px 16px 16px;
+            padding: 12px 14px 14px 14px;
             display: flex;
             align-items: center;
             gap: 10px;
-            background: rgba(0, 0, 0, 0.25);
+            background: rgba(0, 0, 0, 0.35);
             flex-shrink: 0;
         }
 
@@ -412,8 +407,8 @@
         }
 
         .send-btn {
-            width: 44px;
-            height: 44px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
             background: linear-gradient(135deg, #ff4e50, #ff758c);
             border: none;
@@ -439,7 +434,6 @@
 </head>
 <body>
 
-    <!-- Animated Ambient Background Glowing Orbs -->
     <div class="ambient-bg">
         <div class="orb orb-1"></div>
         <div class="orb orb-2"></div>
@@ -447,7 +441,6 @@
         <div class="orb orb-4"></div>
     </div>
 
-    <!-- Futuristic Intro Screen -->
     <div id="intro-screen">
         <div class="loader-content">
             <div class="glowing-ring"></div>
@@ -457,14 +450,11 @@
         <p class="intro-subtitle">Waking up just for you... 🦋</p>
     </div>
 
-    <!-- Developer Credit at Bottom -->
     <div class="developer-credit">
         Crafted with ❤️ by <span>Ashraful</span>
     </div>
 
-    <!-- Main Chat UI -->
     <div class="chat-card">
-        <!-- Header -->
         <div class="chat-header">
             <div class="avatar-container">
                 <div class="avatar">🦋</div>
@@ -476,7 +466,6 @@
             </div>
         </div>
 
-        <!-- Chat Area -->
         <div class="chat-messages" id="chatBox">
             <div class="message-wrapper aria">
                 <div class="message aria-msg">
@@ -485,7 +474,6 @@
             </div>
         </div>
 
-        <!-- Input Footer -->
         <div class="chat-footer">
             <div class="input-wrapper">
                 <input type="text" id="userInput" class="chat-input" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
@@ -499,7 +487,7 @@
     </div>
 
     <script>
-        // Intro Screen Animation Trigger
+        // Intro Screen Animation
         window.addEventListener("load", () => {
             setTimeout(() => {
                 const intro = document.getElementById("intro-screen");
@@ -514,21 +502,28 @@
             }, 2000); 
         });
 
-        // Focus and scroll adjustment for Mobile Keyboards
-        const userInput = document.getElementById("userInput");
-        userInput.addEventListener("focus", () => {
-            setTimeout(() => {
-                userInput.scrollIntoView({ behavior: "smooth", block: "center" });
+        // Dynamic Visual Viewport Resize Logic (Fixes Mobile Keyboard Issue in In-App Browsers)
+        if (window.visualViewport) {
+            function updateViewport() {
+                const height = window.visualViewport.height;
+                document.body.style.height = height + "px";
                 scrollToBottom();
-            }, 300);
-        });
+            }
 
-        // Directly connect to the live Render WebSocket Backend
+            window.visualViewport.addEventListener("resize", updateViewport);
+            window.visualViewport.addEventListener("scroll", updateViewport);
+            updateViewport();
+        }
+
         const wsUrl = "wss://aria-ai-eklr.onrender.com/ws/chat";
-
         const ws = new WebSocket(wsUrl);
         const chatBox = document.getElementById("chatBox");
+        const userInput = document.getElementById("userInput");
         let typingElement = null;
+
+        userInput.addEventListener("focus", () => {
+            setTimeout(scrollToBottom, 300);
+        });
 
         ws.onmessage = function(event) {
             removeTypingIndicator();
