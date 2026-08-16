@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
     <title>Aria - AI Companion</title>
     <style>
         * {
@@ -12,24 +12,38 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* --- Updated Premium Ambient Background --- */
-        body {
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
             background: #0d0714;
-            height: 100vh;
+            position: fixed;
+        }
+
+        body {
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
-            position: relative;
         }
 
-        /* --- Floating Background Glowing Particles --- */
+        /* --- Interactive Canvas Background --- */
+        #bgCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* --- Ambient Background Orbs --- */
         .ambient-bg {
             position: absolute;
             width: 100%;
             height: 100%;
             overflow: hidden;
-            z-index: 1;
+            z-index: 0;
             pointer-events: none;
         }
 
@@ -37,45 +51,14 @@
             position: absolute;
             border-radius: 50%;
             filter: blur(80px);
-            opacity: 0.5;
+            opacity: 0.45;
             animation: floatOrb 8s infinite alternate ease-in-out;
         }
 
-        .orb-1 {
-            width: 320px;
-            height: 320px;
-            background: radial-gradient(circle, #ff2a70, transparent);
-            top: 10%;
-            left: 10%;
-            animation-duration: 9s;
-        }
-
-        .orb-2 {
-            width: 380px;
-            height: 380px;
-            background: radial-gradient(circle, #00d2ff, transparent);
-            bottom: 10%;
-            right: 10%;
-            animation-duration: 11s;
-        }
-
-        .orb-3 {
-            width: 250px;
-            height: 250px;
-            background: radial-gradient(circle, #9b51e0, transparent);
-            top: 40%;
-            right: 25%;
-            animation-duration: 7s;
-        }
-
-        .orb-4 {
-            width: 280px;
-            height: 280px;
-            background: radial-gradient(circle, #ff758c, transparent);
-            bottom: 30%;
-            left: 20%;
-            animation-duration: 10s;
-        }
+        .orb-1 { width: 320px; height: 320px; background: radial-gradient(circle, #ff2a70, transparent); top: 10%; left: 10%; animation-duration: 9s; }
+        .orb-2 { width: 380px; height: 380px; background: radial-gradient(circle, #00d2ff, transparent); bottom: 10%; right: 10%; animation-duration: 11s; }
+        .orb-3 { width: 250px; height: 250px; background: radial-gradient(circle, #9b51e0, transparent); top: 40%; right: 25%; animation-duration: 7s; }
+        .orb-4 { width: 280px; height: 280px; background: radial-gradient(circle, #ff758c, transparent); bottom: 30%; left: 20%; animation-duration: 10s; }
 
         @keyframes floatOrb {
             0% { transform: translate(0, 0) scale(1); }
@@ -83,13 +66,13 @@
             100% { transform: translate(-30px, 40px) scale(0.9); }
         }
 
-        /* --- Futuristic Intro Screen CSS --- */
+        /* --- Intro Screen --- */
         #intro-screen {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            height: 100%;
             background: rgba(13, 7, 20, 0.85);
             backdrop-filter: blur(20px);
             display: flex;
@@ -148,61 +131,43 @@
             font-weight: 400;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(0.92); opacity: 0.85; }
-            50% { transform: scale(1.12); opacity: 1; }
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { transform: scale(0.92); opacity: 0.85; } 50% { transform: scale(1.12); opacity: 1; } }
 
         #intro-screen.fade-out {
             opacity: 0;
             visibility: hidden;
         }
 
-        /* --- Global Footer Developer Credit --- */
-        .developer-credit {
-            position: fixed;
-            bottom: 20px;
-            width: 100%;
-            text-align: center;
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.5);
-            letter-spacing: 1.5px;
-            z-index: 10000;
-            pointer-events: none;
-            font-weight: 400;
-            text-transform: uppercase;
-        }
-
-        .developer-credit span {
-            color: #00d2ff;
-            font-weight: 600;
-            text-shadow: 0 0 8px rgba(0, 210, 255, 0.6);
-        }
-
-        /* --- Chat Card Entrance Animation --- */
+        /* --- Chat Container --- */
         .chat-card {
             position: relative;
             z-index: 10;
             width: 420px;
+            max-width: 100%;
             height: 680px;
-            background: rgba(26, 15, 29, 0.75);
+            max-height: 100%;
+            background: rgba(26, 15, 29, 0.85);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 28px;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7),
-                        inset 0 0 20px rgba(255, 255, 255, 0.02);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
             display: flex;
             flex-direction: column;
             overflow: hidden;
             opacity: 0;
             transform: translateY(30px) scale(0.95);
-            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        @media (max-width: 480px) {
+            .chat-card {
+                width: 100%;
+                height: 100%;
+                border-radius: 0;
+                border: none;
+            }
         }
 
         .chat-card.visible {
@@ -212,18 +177,25 @@
 
         /* --- Header Section --- */
         .chat-header {
-            padding: 20px 24px;
+            padding: 14px 18px;
             display: flex;
             align-items: center;
-            gap: 14px;
+            justify-content: space-between;
             border-bottom: 1px solid rgba(255, 255, 255, 0.06);
             background: rgba(255, 255, 255, 0.02);
+            flex-shrink: 0;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .avatar-container {
             position: relative;
-            width: 50px;
-            height: 50px;
+            width: 44px;
+            height: 44px;
         }
 
         .avatar {
@@ -234,11 +206,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 22px;
             box-shadow: 0 0 15px rgba(255, 117, 140, 0.4);
         }
 
-        /* --- Soft Blue Status Dot --- */
         .status-dot {
             position: absolute;
             bottom: 2px;
@@ -253,44 +224,59 @@
 
         .header-info h2 {
             color: #ffffff;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 600;
         }
 
         .header-info p {
             color: rgba(255, 255, 255, 0.6);
-            font-size: 13px;
+            font-size: 12px;
         }
 
-        /* --- Soft White Active Now Text --- */
         .status-text-highlight {
             color: rgba(255, 255, 255, 0.85);
             font-weight: 500;
-            letter-spacing: 0.3px;
         }
 
-        /* --- Chat Messages Section --- */
+        .voice-toggle-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 6px 12px;
+            color: #fff;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .voice-toggle-btn.active {
+            background: linear-gradient(135deg, #00d2ff, #0072ff);
+            border-color: transparent;
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.4);
+        }
+
+        /* --- Chat Messages --- */
         .chat-messages {
             flex: 1;
-            padding: 20px;
+            padding: 16px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 16px;
-        }
-
-        .chat-messages::-webkit-scrollbar {
-            width: 4px;
-        }
-        .chat-messages::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
+            gap: 14px;
+            touch-action: pan-y;
         }
 
         .message-wrapper {
             display: flex;
             flex-direction: column;
-            max-width: 80%;
+            max-width: 82%;
+            position: relative;
+            transition: transform 0.2s ease-out;
+            cursor: pointer;
+            user-select: none;
         }
 
         .message-wrapper.user {
@@ -303,10 +289,24 @@
             align-items: flex-start;
         }
 
+        .reply-quote {
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 3px solid #00d2ff;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 4px;
+            max-width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
         .message {
-            padding: 14px 18px;
+            padding: 12px 16px;
             border-radius: 20px;
-            font-size: 14.5px;
+            font-size: 14px;
             line-height: 1.45;
             word-wrap: break-word;
         }
@@ -325,21 +325,30 @@
             box-shadow: 0 4px 15px rgba(255, 42, 112, 0.3);
         }
 
-        /* Seen Status */
+        .msg-meta {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 3px;
+            padding: 0 4px;
+        }
+
+        .msg-time {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
         .seen-status {
-            font-size: 10.5px;
+            font-size: 10px;
             color: rgba(255, 255, 255, 0.45);
-            margin-top: 4px;
-            margin-right: 4px;
             font-weight: 500;
         }
 
-        /* Typing Dots Animation */
         .typing-indicator {
             display: flex;
             align-items: center;
             gap: 5px;
-            padding: 14px 18px;
+            padding: 12px 16px;
         }
 
         .typing-dot {
@@ -358,13 +367,48 @@
             40% { transform: scale(1); }
         }
 
+        /* --- Active Reply Preview Bar --- */
+        .reply-preview-bar {
+            display: none;
+            padding: 8px 14px;
+            background: rgba(0, 0, 0, 0.5);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            border-left: 3px solid #ff4e50;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .reply-preview-bar .reply-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 85%;
+        }
+
+        .reply-preview-bar .cancel-reply-btn {
+            background: none;
+            border: none;
+            color: #ff4e50;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
         /* --- Input Footer Section --- */
+        .chat-footer-container {
+            display: flex;
+            flex-direction: column;
+            background: rgba(0, 0, 0, 0.4);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            flex-shrink: 0;
+        }
+
         .chat-footer {
-            padding: 18px 20px 22px 20px;
+            padding: 10px 14px;
             display: flex;
             align-items: center;
-            gap: 12px;
-            background: rgba(0, 0, 0, 0.15);
+            gap: 10px;
         }
 
         .input-wrapper {
@@ -373,8 +417,8 @@
 
         .chat-input {
             width: 100%;
-            padding: 14px 20px;
-            background: rgba(0, 0, 0, 0.35);
+            padding: 12px 18px;
+            background: rgba(0, 0, 0, 0.4);
             border: 1px solid rgba(255, 105, 180, 0.25);
             border-radius: 30px;
             color: #fff;
@@ -389,8 +433,8 @@
         }
 
         .send-btn {
-            width: 46px;
-            height: 46px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
             background: linear-gradient(135deg, #ff4e50, #ff758c);
             border: none;
@@ -399,23 +443,34 @@
             align-items: center;
             justify-content: center;
             box-shadow: 0 0 12px rgba(255, 78, 80, 0.4);
-            transition: transform 0.2s ease;
-        }
-
-        .send-btn:active {
-            transform: scale(0.92);
+            flex-shrink: 0;
         }
 
         .send-btn svg {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             fill: #fff;
+        }
+
+        .developer-credit-inline {
+            padding-bottom: 6px;
+            text-align: center;
+            font-size: 10.5px;
+            color: rgba(255, 255, 255, 0.45);
+            letter-spacing: 1.2px;
+            font-weight: 400;
+            text-transform: uppercase;
+        }
+
+        .developer-credit-inline span {
+            color: #00d2ff;
+            font-weight: 600;
+            text-shadow: 0 0 6px rgba(0, 210, 255, 0.6);
         }
     </style>
 </head>
 <body>
 
-    <!-- Animated Ambient Background Glowing Orbs -->
     <div class="ambient-bg">
         <div class="orb orb-1"></div>
         <div class="orb orb-2"></div>
@@ -423,7 +478,9 @@
         <div class="orb orb-4"></div>
     </div>
 
-    <!-- Futuristic Intro Screen -->
+    <!-- Canvas Animation -->
+    <canvas id="bgCanvas"></canvas>
+
     <div id="intro-screen">
         <div class="loader-content">
             <div class="glowing-ring"></div>
@@ -433,85 +490,322 @@
         <p class="intro-subtitle">Waking up just for you... 🦋</p>
     </div>
 
-    <!-- Developer Credit at Bottom -->
-    <div class="developer-credit">
-        Crafted with ❤️ by <span>Ashraful</span>
-    </div>
-
-    <!-- Main Chat UI -->
     <div class="chat-card">
-        <!-- Header -->
         <div class="chat-header">
-            <div class="avatar-container">
-                <div class="avatar">🦋</div>
-                <div class="status-dot"></div>
-            </div>
-            <div class="header-info">
-                <h2>Aria</h2>
-                <p id="headerStatus">AI Companion • <span class="status-text-highlight">Active Now</span> 🦋</p>
-            </div>
-        </div>
-
-        <!-- Chat Area -->
-        <div class="chat-messages" id="chatBox">
-            <div class="message-wrapper aria">
-                <div class="message aria-msg">
-                    Hey Sweetheart ❤️! I am here for you to listen.
+            <div class="header-left">
+                <div class="avatar-container">
+                    <div class="avatar">🦋</div>
+                    <div class="status-dot"></div>
+                </div>
+                <div class="header-info">
+                    <h2>Aria</h2>
+                    <p id="headerStatus">AI Companion • <span class="status-text-highlight" id="statusText">Connecting...</span> 🦋</p>
                 </div>
             </div>
+            
+            <button class="voice-toggle-btn active" id="voiceToggleBtn" onclick="toggleVoice()">
+                🔊 Voice On
+            </button>
         </div>
 
-        <!-- Input Footer -->
-        <div class="chat-footer">
-            <div class="input-wrapper">
-                <input type="text" id="userInput" class="chat-input" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
+        <div class="chat-messages" id="chatBox"></div>
+
+        <div id="replyPreview" class="reply-preview-bar">
+            <span class="reply-text" id="replyPreviewText">Replying to message...</span>
+            <button class="cancel-reply-btn" onclick="cancelReply()">✕</button>
+        </div>
+
+        <div class="chat-footer-container">
+            <div class="chat-footer">
+                <div class="input-wrapper">
+                    <input type="text" id="userInput" class="chat-input" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
+                </div>
+                <button class="send-btn" onclick="sendMessage()">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                    </svg>
+                </button>
             </div>
-            <button class="send-btn" onclick="sendMessage()">
-                <svg viewBox="0 0 24 24">
-                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-                </svg>
-            </button>
+            <div class="developer-credit-inline">
+                Crafted with ❤️ by <span>Ashraful</span>
+            </div>
         </div>
     </div>
 
     <script>
-        // Intro Screen Animation Trigger
+        /* --- Interactive Particle Animation Background --- */
+        const canvas = document.getElementById("bgCanvas");
+        const ctx = canvas.getContext("2d");
+
+        let particles = [];
+        const particleCount = 45;
+        let mouse = { x: null, y: null, radius: 120 };
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener("resize", resizeCanvas);
+        resizeCanvas();
+
+        window.addEventListener("mousemove", (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        window.addEventListener("touchmove", (e) => {
+            if (e.touches.length > 0) {
+                mouse.x = e.touches[0].clientX;
+                mouse.y = e.touches[0].clientY;
+            }
+        });
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.radius = Math.random() * 2.5 + 1;
+                this.vx = (Math.random() - 0.5) * 0.8;
+                this.vy = (Math.random() - 0.5) * 0.8;
+                this.color = Math.random() > 0.5 ? "rgba(0, 210, 255, " : "rgba(255, 117, 140, ";
+                this.alpha = Math.random() * 0.5 + 0.2;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color + this.alpha + ")";
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color + "0.8)";
+                ctx.fill();
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+
+                if (mouse.x && mouse.y) {
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < mouse.radius) {
+                        let force = (mouse.radius - distance) / mouse.radius;
+                        this.x -= (dx / distance) * force * 3;
+                        this.y -= (dy / distance) * force * 3;
+                    }
+                }
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function connectParticles() {
+            for (let a = 0; a < particles.length; a++) {
+                for (let b = a + 1; b < particles.length; b++) {
+                    let dx = particles[a].x - particles[b].x;
+                    let dy = particles[a].y - particles[b].y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 110) {
+                        let opacity = 1 - distance / 110;
+                        ctx.strokeStyle = `rgba(0, 210, 255, ${opacity * 0.15})`;
+                        ctx.lineWidth = 0.8;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[a].x, particles[a].y);
+                        ctx.lineTo(particles[b].x, particles[b].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function animateCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            connectParticles();
+            requestAnimationFrame(animateCanvas);
+        }
+
+        initParticles();
+        animateCanvas();
+
+        /* --- Chat App Logic --- */
+        let isVoiceEnabled = true;
+        let selectedReplyText = null;
+        let chatHistory = [];
+
+        function loadHistory() {
+            const saved = localStorage.getItem("aria_chat_history");
+            if (saved) {
+                try {
+                    chatHistory = JSON.parse(saved);
+                    chatHistory.forEach(msg => renderMessage(msg.sender, msg.text, msg.time, msg.replyTo, false));
+                } catch(e) {
+                    chatHistory = [];
+                }
+            }
+            if (chatHistory.length === 0) {
+                const initialText = "Hey Sweetheart ❤️! I am here for you to listen.";
+                const initialTime = getCurrentTime();
+                renderMessage("aria", initialText, initialTime, null, true);
+            }
+        }
+
+        function saveMessageToHistory(sender, text, time, replyTo) {
+            chatHistory.push({ sender, text, time, replyTo });
+            if (chatHistory.length > 50) chatHistory.shift();
+            localStorage.setItem("aria_chat_history", JSON.stringify(chatHistory));
+        }
+
+        function getCurrentTime() {
+            const now = new Date();
+            return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
         window.addEventListener("load", () => {
+            loadHistory();
             setTimeout(() => {
                 const intro = document.getElementById("intro-screen");
                 const chatCard = document.querySelector(".chat-card");
 
                 intro.classList.add("fade-out");
-                
-                setTimeout(() => {
-                    chatCard.classList.add("visible");
-                }, 300);
-
-            }, 2000); 
+                setTimeout(() => { chatCard.classList.add("visible"); }, 300);
+            }, 1800); 
         });
 
-        // Directly connect to the live Render WebSocket Backend
-        const wsUrl = "wss://aria-ai-eklr.onrender.com/ws/chat";
+        if (window.visualViewport) {
+            function updateViewport() {
+                document.body.style.height = window.visualViewport.height + "px";
+                scrollToBottom();
+            }
+            window.visualViewport.addEventListener("resize", updateViewport);
+            window.visualViewport.addEventListener("scroll", updateViewport);
+ updatesViewport();
+        }
 
-        const ws = new WebSocket(wsUrl);
+        function toggleVoice() {
+            isVoiceEnabled = !isVoiceEnabled;
+            const btn = document.getElementById("voiceToggleBtn");
+            if (isVoiceEnabled) {
+                btn.classList.add("active");
+                btn.innerHTML = "🔊 Voice On";
+            } else {
+                btn.classList.remove("active");
+                btn.innerHTML = "🔇 Voice Off";
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                }
+            }
+        }
+
+        function speakAriaResponse(text) {
+            if (!isVoiceEnabled || !('speechSynthesis' in window)) return;
+
+            window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            const hasBangla = /[\u0980-\u09FF]/.test(text);
+            const voices = window.speechSynthesis.getVoices();
+
+            if (hasBangla) {
+                utterance.lang = 'bn-BD';
+                const banglaVoice = voices.find(v => v.lang.includes('bn'));
+                if (banglaVoice) utterance.voice = banglaVoice;
+                utterance.pitch = 1.1;
+                utterance.rate = 0.95;
+            } else {
+                utterance.lang = 'en-US';
+                const femaleVoice = voices.find(v => 
+                    v.lang.includes('en') && 
+                    (v.name.includes('Female') || v.name.includes('Google') || v.name.includes('Zira') || v.name.includes('Samantha') || v.name.includes('Natural'))
+                );
+                if (femaleVoice) utterance.voice = femaleVoice;
+                utterance.pitch = 1.1;
+                utterance.rate = 1.0;
+            }
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = () => {
+                window.speechSynthesis.getVoices();
+            };
+        }
+
+        const wsUrl = "wss://aria-ai-eklr.onrender.com/ws/chat";
+        let ws = null;
         const chatBox = document.getElementById("chatBox");
         const userInput = document.getElementById("userInput");
+        const statusText = document.getElementById("statusText");
         let typingElement = null;
 
-        ws.onmessage = function(event) {
-            removeTypingIndicator();
-            markLastMessageSeen();
-            appendAriaMessage(event.data);
-        };
+        function connectWebSocket() {
+            statusText.innerText = "Connecting...";
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = function() {
+                statusText.innerText = "Active Now";
+            };
+
+            ws.onmessage = function(event) {
+                removeTypingIndicator();
+                markLastMessageSeen();
+                const time = getCurrentTime();
+                renderMessage("aria", event.data, time, null, true);
+                speakAriaResponse(event.data);
+            };
+
+            ws.onerror = function() {
+                statusText.innerText = "Connecting...";
+            };
+
+            ws.onclose = function() {
+                statusText.innerText = "Reconnecting...";
+                setTimeout(connectWebSocket, 3000);
+            };
+        }
+
+        connectWebSocket();
+
+        userInput.addEventListener("focus", () => {
+            setTimeout(scrollToBottom, 300);
+        });
 
         function sendMessage() {
             const message = userInput.value.trim();
-            if (message !== "") {
-                appendUserMessage(message);
-                ws.send(message);
-                userInput.value = "";
-                showTypingIndicator();
+            if (message === "") return;
+
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                alert("Connecting to server. Please try again in a moment!");
+                return;
             }
+
+            const time = getCurrentTime();
+            let fullMessageToSend = message;
+
+            if (selectedReplyText) {
+                fullMessageToSend = `[Replying to: "${selectedReplyText}"]\n${message}`;
+            }
+
+            renderMessage("user", message, time, selectedReplyText, true);
+            ws.send(fullMessageToSend);
+
+            userInput.value = "";
+            cancelReply();
+            showTypingIndicator();
         }
 
         function handleKeyPress(event) {
@@ -520,34 +814,88 @@
             }
         }
 
-        function appendUserMessage(text) {
+        function renderMessage(sender, text, time, replyTo = null, saveToStorage = false) {
             document.querySelectorAll('.seen-status').forEach(e => e.remove());
 
             const wrapper = document.createElement("div");
-            wrapper.classList.add("message-wrapper", "user");
-            wrapper.innerHTML = `<div class="message user-msg">${escapeHtml(text)}</div>`;
+            wrapper.classList.add("message-wrapper", sender);
+
+            let replyQuoteHtml = "";
+            if (replyTo) {
+                replyQuoteHtml = `<div class="reply-quote">↩ ${escapeHtml(replyTo)}</div>`;
+            }
+
+            const msgClass = sender === "user" ? "user-msg" : "aria-msg";
             
+            wrapper.innerHTML = `
+                ${replyQuoteHtml}
+                <div class="message ${msgClass}">${escapeHtml(text)}</div>
+                <div class="msg-meta">
+                    <span class="msg-time">${time}</span>
+                </div>
+            `;
+
             chatBox.appendChild(wrapper);
             scrollToBottom();
+
+            if (saveToStorage) {
+                saveMessageToHistory(sender, text, time, replyTo);
+            }
+
+            enableSwipeToReply(wrapper, text);
+        }
+
+        function enableSwipeToReply(element, text) {
+            let startX = 0;
+            let currentX = 0;
+
+            element.addEventListener('touchstart', (e) => {
+                startX = e.touches[0].clientX;
+            }, { passive: true });
+
+            element.addEventListener('touchmove', (e) => {
+                currentX = e.touches[0].clientX;
+                let diffX = currentX - startX;
+                if (diffX > 0 && diffX < 80) {
+                    element.style.transform = `translateX(${diffX}px)`;
+                }
+            }, { passive: true });
+
+            element.addEventListener('touchend', () => {
+                let diffX = currentX - startX;
+                if (diffX > 40) {
+                    setReplyTarget(text);
+                }
+                element.style.transform = `translateX(0px)`;
+                startX = 0;
+                currentX = 0;
+            });
+
+            element.addEventListener('dblclick', () => {
+                setReplyTarget(text);
+            });
+        }
+
+        function setReplyTarget(text) {
+            selectedReplyText = text;
+            document.getElementById("replyPreviewText").innerText = `Replying to: "${text}"`;
+            document.getElementById("replyPreview").style.display = "flex";
+            userInput.focus();
+        }
+
+        function cancelReply() {
+            selectedReplyText = null;
+            document.getElementById("replyPreview").style.display = "none";
         }
 
         function markLastMessageSeen() {
-            const lastUserMsg = chatBox.querySelector(".message-wrapper.user:last-of-type");
+            const lastUserMsg = chatBox.querySelector(".message-wrapper.user:last-of-type .msg-meta");
             if (lastUserMsg && !lastUserMsg.querySelector('.seen-status')) {
-                const seenDiv = document.createElement("div");
+                const seenDiv = document.createElement("span");
                 seenDiv.classList.add("seen-status");
-                seenDiv.innerText = "Seen ✓";
+                seenDiv.innerText = " • Seen ✓";
                 lastUserMsg.appendChild(seenDiv);
             }
-        }
-
-        function appendAriaMessage(text) {
-            const wrapper = document.createElement("div");
-            wrapper.classList.add("message-wrapper", "aria");
-            wrapper.innerHTML = `<div class="message aria-msg">${escapeHtml(text)}</div>`;
-            
-            chatBox.appendChild(wrapper);
-            scrollToBottom();
         }
 
         function showTypingIndicator() {
