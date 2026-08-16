@@ -321,7 +321,7 @@
             } else {
                 voiceToggle.innerText = "🔇 Voice Off";
                 voiceToggle.classList.add('off');
-                window.speechSynthesis.cancel(); // Stop talking
+                if ('speechSynthesis' in window) window.speechSynthesis.cancel();
             }
         });
 
@@ -340,13 +340,10 @@
 
             socket.onmessage = function (event) {
                 removeTypingIndicator();
-                
-                // Update previous User message status to 'Seen'
                 updateUserSeenStatus();
 
                 appendMessage(event.data, 'bot');
 
-                // Speak Response if Voice is Enabled
                 if (isVoiceEnabled) {
                     speakText(event.data);
                 }
@@ -374,7 +371,6 @@
                 socket.send(text);
                 messageInput.value = "";
 
-                // Show Typing Indicator
                 showTypingIndicator();
             } else {
                 alert("Connection is not ready yet!");
@@ -444,16 +440,56 @@
             return `${hours}:${minutes} ${ampm}`;
         }
 
+        // --- ENHANCED NATURAL FEMALE VOICE LOGIC ---
+        function getBestFemaleVoice() {
+            if (!('speechSynthesis' in window)) return null;
+            const voices = window.speechSynthesis.getVoices();
+            if (!voices || voices.length === 0) return null;
+
+            // Preferred high-quality female voices across Mac, Windows, Android, iOS
+            const preferredVoices = [
+                "Samantha", "Karen", "Victoria", "Google UK English Female", 
+                "Microsoft Zira", "Microsoft Jenny", "Google US English", "Serena"
+            ];
+
+            for (let name of preferredVoices) {
+                const found = voices.find(v => v.name.includes(name));
+                if (found) return found;
+            }
+
+            // Fallback: search for any female/woman keyword in voice name
+            const femaleVoice = voices.find(v => 
+                v.name.toLowerCase().includes('female') || 
+                v.name.toLowerCase().includes('woman')
+            );
+
+            return femaleVoice || voices[0];
+        }
+
+        // Ensure voices are loaded asynchronously in Chrome/Safari
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = () => {
+                window.speechSynthesis.getVoices();
+            };
+        }
+
         function speakText(text) {
             if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel(); // Clear queue
-                
-                // Remove emojis for cleaner voice output
+                window.speechSynthesis.cancel(); // Stop prior audio
+
+                // Clean emojis for speech synthesis
                 const cleanText = text.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '');
-                
+
                 const utterance = new SpeechSynthesisUtterance(cleanText);
-                utterance.rate = 1.0;
-                utterance.pitch = 1.1; // Friendly tone
+                const selectedVoice = getBestFemaleVoice();
+
+                if (selectedVoice) {
+                    utterance.voice = selectedVoice;
+                }
+
+                // Natural tone settings
+                utterance.rate = 0.95;  // Slightly natural pace
+                utterance.pitch = 1.25; // Soft & sweet female voice tone
 
                 window.speechSynthesis.speak(utterance);
             }
