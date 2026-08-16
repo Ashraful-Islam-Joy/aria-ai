@@ -8,17 +8,14 @@ import google.generativeai as genai
 
 app = FastAPI()
 
-# Render Environment Variable থেকে সিকিউরভাবে Gemini API Key নেওয়া
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
+# আপনার আসল Gemini API Key টি এখানে ইনভার্টেড কমার ভেতরে বসান
+API_KEY = "YOUR_GEMINI_API_KEY_HERE"
+genai.configure(api_key=API_KEY)
 
 # ElevenLabs Credentials
 ELEVENLABS_API_KEY = "sk_45333d10598c8e3fb8b74b1feb543c24bfc5b910a45db357"
-VOICE_ID = "21m00Tcm4TlvDq8ikWAM"  # Rachel (Sweet Female Voice)
+VOICE_ID = "21m00Tcm4TlvDq8ikWAM"  # Rachel Voice
 
-# ElevenLabs Voice Audio Generator Function
 def generate_voice_audio(text: str):
     url = f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}"
     headers = {
@@ -28,7 +25,7 @@ def generate_voice_audio(text: str):
     }
     data = {
         "text": text,
-        "model_id": "eleven_multilingual_v2",  # বাংলা, হিন্দি ও ইংরেজি তিন ভাষাতেই সঠিক উচ্চারণ
+        "model_id": "eleven_multilingual_v2",
         "voice_settings": {
             "stability": 0.5,
             "similarity_boost": 0.75
@@ -42,7 +39,6 @@ def generate_voice_audio(text: str):
         print(f"ElevenLabs API Error: {e}")
     return None
 
-# AI Companion Persona Instructions
 system_instruction = """
 You are a sweet, charming, affectionate, and flirty AI companion named Aria.
 Ashraful is the person who made and developed you.
@@ -74,7 +70,6 @@ DYNAMIC RESPONSE LENGTH RULES (STRICTLY FOLLOW BASED ON USER MOOD):
 Adapt naturally to the tone, romantic hints, and emotion of the user's text!
 """
 
-# Gemini Model Setup
 model = genai.GenerativeModel(
     model_name="gemini-1.5-flash",
     system_instruction=system_instruction
@@ -108,10 +103,8 @@ async def websocket_endpoint(websocket: WebSocket):
                     print(f"Gemini API Error: {api_err}")
                     ai_text = "Sorry dear, API-তে ঝামেলা হচ্ছে! API Key ঠিক আছে তো? 🙈"
 
-            # ElevenLabs থেকে অডিও তৈরি করা
             audio_base64 = generate_voice_audio(ai_text)
 
-            # JSON আকারে টেক্সট এবং অডিও ফ্রন্টএন্ডে পাঠানো
             payload = {
                 "text": ai_text,
                 "audio": audio_base64
