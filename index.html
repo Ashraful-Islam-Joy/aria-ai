@@ -26,7 +26,6 @@
             align-items: center;
         }
 
-        /* --- Interactive Canvas Background --- */
         #bgCanvas {
             position: absolute;
             top: 0;
@@ -37,7 +36,6 @@
             pointer-events: none;
         }
 
-        /* --- Ambient Background Orbs --- */
         .ambient-bg {
             position: absolute;
             width: 100%;
@@ -73,7 +71,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(13, 7, 20, 0.85);
+            background: rgba(13, 7, 20, 0.95);
             backdrop-filter: blur(20px);
             display: flex;
             flex-direction: column;
@@ -137,6 +135,7 @@
         #intro-screen.fade-out {
             opacity: 0;
             visibility: hidden;
+            pointer-events: none;
         }
 
         /* --- Chat Container --- */
@@ -175,7 +174,6 @@
             transform: translateY(0) scale(1);
         }
 
-        /* --- Header Section --- */
         .chat-header {
             padding: 14px 18px;
             display: flex;
@@ -258,7 +256,6 @@
             box-shadow: 0 0 10px rgba(0, 210, 255, 0.4);
         }
 
-        /* --- Chat Messages --- */
         .chat-messages {
             flex: 1;
             padding: 16px;
@@ -367,7 +364,6 @@
             40% { transform: scale(1); }
         }
 
-        /* --- Active Reply Preview Bar --- */
         .reply-preview-bar {
             display: none;
             padding: 8px 14px;
@@ -395,7 +391,6 @@
             cursor: pointer;
         }
 
-        /* --- Input Footer Section --- */
         .chat-footer-container {
             display: flex;
             flex-direction: column;
@@ -478,7 +473,6 @@
         <div class="orb orb-4"></div>
     </div>
 
-    <!-- Dynamic Particle Canvas -->
     <canvas id="bgCanvas"></canvas>
 
     <div id="intro-screen">
@@ -533,39 +527,40 @@
     </div>
 
     <script>
-        /* --- Interactive Particle Background Animation --- */
+        // Smooth Loader Dismiss Logic (Fixes Hanging)
+        function hideIntroLoader() {
+            const intro = document.getElementById("intro-screen");
+            const chatCard = document.querySelector(".chat-card");
+            if (intro) {
+                intro.classList.add("fade-out");
+            }
+            if (chatCard) {
+                setTimeout(() => { chatCard.classList.add("visible"); }, 200);
+            }
+        }
+
+        // Hide intro after 1.5s automatically
+        setTimeout(hideIntroLoader, 1500);
+
+        /* --- Interactive Canvas Background --- */
         const canvas = document.getElementById("bgCanvas");
         const ctx = canvas.getContext("2d");
 
         let particles = [];
-        const particleCount = 45;
-        let mouse = { x: null, y: null, radius: 120 };
+        const particleCount = 40;
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         }
-
         window.addEventListener("resize", resizeCanvas);
         resizeCanvas();
-
-        window.addEventListener("mousemove", (e) => {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
-        });
-
-        window.addEventListener("touchmove", (e) => {
-            if (e.touches.length > 0) {
-                mouse.x = e.touches[0].clientX;
-                mouse.y = e.touches[0].clientY;
-            }
-        });
 
         class Particle {
             constructor() {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
-                this.radius = Math.random() * 2.5 + 1;
+                this.radius = Math.random() * 2 + 1;
                 this.vx = (Math.random() - 0.5) * 0.8;
                 this.vy = (Math.random() - 0.5) * 0.8;
                 this.color = Math.random() > 0.5 ? "rgba(0, 210, 255, " : "rgba(255, 117, 140, ";
@@ -576,28 +571,14 @@
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                 ctx.fillStyle = this.color + this.alpha + ")";
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = this.color + "0.8)";
                 ctx.fill();
             }
 
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
-
                 if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
                 if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
-
-                if (mouse.x && mouse.y) {
-                    let dx = mouse.x - this.x;
-                    let dy = mouse.y - this.y;
-                    let distance = Math.sqrt(dx * dx + dy * dy);
-                    if (distance < mouse.radius) {
-                        let force = (mouse.radius - distance) / mouse.radius;
-                        this.x -= (dx / distance) * force * 3;
-                        this.y -= (dy / distance) * force * 3;
-                    }
-                }
             }
         }
 
@@ -608,40 +589,19 @@
             }
         }
 
-        function connectParticles() {
-            for (let a = 0; a < particles.length; a++) {
-                for (let b = a + 1; b < particles.length; b++) {
-                    let dx = particles[a].x - particles[b].x;
-                    let dy = particles[a].y - particles[b].y;
-                    let distance = Math.sqrt(dx * dx + dy * dy);
-
-                    if (distance < 110) {
-                        let opacity = 1 - distance / 110;
-                        ctx.strokeStyle = `rgba(0, 210, 255, ${opacity * 0.15})`;
-                        ctx.lineWidth = 0.8;
-                        ctx.beginPath();
-                        ctx.moveTo(particles[a].x, particles[a].y);
-                        ctx.lineTo(particles[b].x, particles[b].y);
-                        ctx.stroke();
-                    }
-                }
-            }
-        }
-
         function animateCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             particles.forEach(p => {
                 p.update();
                 p.draw();
             });
-            connectParticles();
             requestAnimationFrame(animateCanvas);
         }
 
         initParticles();
         animateCanvas();
 
-        /* --- Chat App Real-time Logic --- */
+        /* --- Chat App Real-Time Logic --- */
         let isVoiceEnabled = true;
         let selectedReplyText = null;
         let chatHistory = [];
@@ -674,26 +634,7 @@
             return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
 
-        window.addEventListener("load", () => {
-            loadHistory();
-            setTimeout(() => {
-                const intro = document.getElementById("intro-screen");
-                const chatCard = document.querySelector(".chat-card");
-
-                intro.classList.add("fade-out");
-                setTimeout(() => { chatCard.classList.add("visible"); }, 300);
-            }, 1800); 
-        });
-
-        if (window.visualViewport) {
-            function updateViewport() {
-                document.body.style.height = window.visualViewport.height + "px";
-                scrollToBottom();
-            }
-            window.visualViewport.addEventListener("resize", updateViewport);
-            window.visualViewport.addEventListener("scroll", updateViewport);
-            updateViewport();
-        }
+        loadHistory();
 
         function toggleVoice() {
             isVoiceEnabled = !isVoiceEnabled;
@@ -712,7 +653,6 @@
 
         function speakAriaResponse(text) {
             if (!isVoiceEnabled || !('speechSynthesis' in window)) return;
-
             window.speechSynthesis.cancel();
 
             const utterance = new SpeechSynthesisUtterance(text);
@@ -723,13 +663,13 @@
                 utterance.lang = 'bn-BD';
                 const banglaVoice = voices.find(v => v.lang.includes('bn'));
                 if (banglaVoice) utterance.voice = banglaVoice;
-                utterance.pitch = 1.25;
+                utterance.pitch = 1.2;
                 utterance.rate = 0.9;
             } else {
                 utterance.lang = 'en-US';
                 const femaleVoice = voices.find(v => 
                     v.lang.includes('en') && 
-                    (v.name.includes('Female') || v.name.includes('Google') || v.name.includes('Zira') || v.name.includes('Samantha') || v.name.includes('Natural'))
+                    (v.name.includes('Female') || v.name.includes('Google') || v.name.includes('Zira'))
                 );
                 if (femaleVoice) utterance.voice = femaleVoice;
                 utterance.pitch = 1.2;
@@ -739,13 +679,7 @@
             window.speechSynthesis.speak(utterance);
         }
 
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.onvoiceschanged = () => {
-                window.speechSynthesis.getVoices();
-            };
-        }
-
-        // Auto Detect Protocol (WSS for HTTPS production, WS for HTTP localhost)
+        // Automatic WebSocket Connection Protocol setup
         const loc = window.location;
         const wsProtocol = loc.protocol === "https:" ? "wss:" : "ws:";
         const wsUrl = `${wsProtocol}//${loc.host}/ws/chat`;
@@ -784,18 +718,9 @@
 
         connectWebSocket();
 
-        userInput.addEventListener("focus", () => {
-            setTimeout(scrollToBottom, 300);
-        });
-
-        /* --- Personal Details Privacy Protection Filter --- */
         function isPrivateInfoRequest(msg) {
             const lowerMsg = msg.toLowerCase();
-            const keywords = [
-                'gf', 'girlfriend', 'partner', 'lover', 'premika', 'bhomok', 'bou', 'biye',
-                'relationship', 'girl friend', 'ke gf', 'gf ke', 'gf er naam', 'gf er name',
-                'gf name', 'gf info', 'partner info'
-            ];
+            const keywords = ['gf', 'girlfriend', 'partner', 'lover', 'premika', 'bhomok', 'bou', 'biye', 'relationship'];
             return keywords.some(keyword => lowerMsg.includes(keyword));
         }
 
@@ -804,11 +729,9 @@
             if (message === "") return;
 
             const time = getCurrentTime();
-
             renderMessage("user", message, time, selectedReplyText, true);
             userInput.value = "";
 
-            // Check Privacy Filter First
             if (isPrivateInfoRequest(message)) {
                 showTypingIndicator();
                 setTimeout(() => {
@@ -818,7 +741,6 @@
                     renderMessage("aria", privateResponse, getCurrentTime(), null, true);
                     speakAriaResponse(privateResponse);
                 }, 800);
-
                 cancelReply();
                 return;
             }
@@ -829,7 +751,6 @@
             }
 
             let fullMessageToSend = message;
-
             if (selectedReplyText) {
                 fullMessageToSend = `[Replying to: "${selectedReplyText}"]\n${message}`;
             }
@@ -851,11 +772,7 @@
             const wrapper = document.createElement("div");
             wrapper.classList.add("message-wrapper", sender);
 
-            let replyQuoteHtml = "";
-            if (replyTo) {
-                replyQuoteHtml = `<div class="reply-quote">↩ ${escapeHtml(replyTo)}</div>`;
-            }
-
+            let replyQuoteHtml = replyTo ? `<div class="reply-quote">↩ ${escapeHtml(replyTo)}</div>` : "";
             const msgClass = sender === "user" ? "user-msg" : "aria-msg";
             
             wrapper.innerHTML = `
@@ -872,39 +789,6 @@
             if (saveToStorage) {
                 saveMessageToHistory(sender, text, time, replyTo);
             }
-
-            enableSwipeToReply(wrapper, text);
-        }
-
-        function enableSwipeToReply(element, text) {
-            let startX = 0;
-            let currentX = 0;
-
-            element.addEventListener('touchstart', (e) => {
-                startX = e.touches[0].clientX;
-            }, { passive: true });
-
-            element.addEventListener('touchmove', (e) => {
-                currentX = e.touches[0].clientX;
-                let diffX = currentX - startX;
-                if (diffX > 0 && diffX < 80) {
-                    element.style.transform = `translateX(${diffX}px)`;
-                }
-            }, { passive: true });
-
-            element.addEventListener('touchend', () => {
-                let diffX = currentX - startX;
-                if (diffX > 40) {
-                    setReplyTarget(text);
-                }
-                element.style.transform = `translateX(0px)`;
-                startX = 0;
-                currentX = 0;
-            });
-
-            element.addEventListener('dblclick', () => {
-                setReplyTarget(text);
-            });
         }
 
         function setReplyTarget(text) {
