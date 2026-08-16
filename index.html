@@ -25,7 +25,7 @@
         .chat-card {
             width: 100%;
             max-width: 420px;
-            height: 650px;
+            height: 680px;
             background: linear-gradient(180deg, #1d132b 0%, #110b1a 100%);
             border-radius: 28px;
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -101,6 +101,12 @@
             font-weight: 600;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0, 168, 255, 0.3);
+            transition: 0.2s;
+        }
+
+        .voice-btn.off {
+            background: #57606f;
+            box-shadow: none;
         }
 
         /* Chat Body */
@@ -110,12 +116,27 @@
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 14px;
             scroll-behavior: smooth;
         }
 
-        .message {
+        .message-wrapper {
+            display: flex;
+            flex-direction: column;
             max-width: 80%;
+        }
+
+        .message-wrapper.user {
+            align-self: flex-end;
+            align-items: flex-end;
+        }
+
+        .message-wrapper.bot {
+            align-self: flex-start;
+            align-items: flex-start;
+        }
+
+        .message {
             padding: 12px 16px;
             border-radius: 18px;
             font-size: 14px;
@@ -123,19 +144,52 @@
             word-wrap: break-word;
         }
 
-        .message.user {
-            align-self: flex-end;
+        .message-wrapper.user .message {
             background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
             color: white;
             border-bottom-right-radius: 4px;
         }
 
-        .message.bot {
-            align-self: flex-start;
+        .message-wrapper.bot .message {
             background: rgba(255, 255, 255, 0.08);
             color: #e1e1e1;
             border-bottom-left-radius: 4px;
             border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .meta-info {
+            font-size: 10px;
+            color: #8a8599;
+            margin-top: 4px;
+            padding: 0 4px;
+        }
+
+        /* Typing Animation Dots */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+            width: fit-content;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: #ff7eb3;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
         }
 
         /* Input Area */
@@ -216,13 +270,14 @@
                     <p>AI Companion • <span id="statusText">Connecting... 🦋</span></p>
                 </div>
             </div>
-            <button class="voice-btn">🔊 Voice On</button>
+            <button class="voice-btn" id="voiceToggle">🔊 Voice On</button>
         </div>
 
         <!-- Chat Area -->
         <div class="chat-body" id="chatBody">
-            <div class="message bot">
-                Hey there! I'm Aria ❤️ How are you feeling today?
+            <div class="message-wrapper bot">
+                <div class="message">Hey there! I'm Aria ❤️ How are you feeling today?</div>
+                <div class="meta-info" id="initialTime"></div>
             </div>
         </div>
 
@@ -249,31 +304,58 @@
         const chatBody = document.getElementById('chatBody');
         const statusText = document.getElementById('statusText');
         const statusDot = document.getElementById('statusDot');
+        const voiceToggle = document.getElementById('voiceToggle');
 
-        // Dynamically detect Protocol (ws:// or wss://)
+        let isVoiceEnabled = true;
+        let typingIndicatorEl = null;
+
+        // Set Initial Time
+        document.getElementById('initialTime').innerText = getCurrentTime();
+
+        // Voice Toggle Handler
+        voiceToggle.addEventListener('click', () => {
+            isVoiceEnabled = !isVoiceEnabled;
+            if (isVoiceEnabled) {
+                voiceToggle.innerText = "🔊 Voice On";
+                voiceToggle.classList.remove('off');
+            } else {
+                voiceToggle.innerText = "🔇 Voice Off";
+                voiceToggle.classList.add('off');
+                window.speechSynthesis.cancel(); // Stop talking
+            }
+        });
+
+        // Dynamic WebSocket Protocol
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const wsUrl = `${protocol}//${window.location.host}/ws/chat`;
-
         let socket;
 
         function connectWebSocket() {
             socket = new WebSocket(wsUrl);
 
             socket.onopen = function () {
-                console.log("WebSocket connected successfully!");
                 statusText.innerText = "Active Now 🦋";
                 statusDot.classList.add('active');
             };
 
             socket.onmessage = function (event) {
+                removeTypingIndicator();
+                
+                // Update previous User message status to 'Seen'
+                updateUserSeenStatus();
+
                 appendMessage(event.data, 'bot');
+
+                // Speak Response if Voice is Enabled
+                if (isVoiceEnabled) {
+                    speakText(event.data);
+                }
             };
 
             socket.onclose = function () {
-                console.log("WebSocket disconnected. Retrying in 3 seconds...");
                 statusText.innerText = "Connecting... 🦋";
                 statusDot.classList.remove('active');
-                setTimeout(connectWebSocket, 3000); // Auto reconnect
+                setTimeout(connectWebSocket, 3000);
             };
 
             socket.onerror = function (err) {
@@ -281,7 +363,6 @@
             };
         }
 
-        // Initialize Connection
         connectWebSocket();
 
         function sendMessage() {
@@ -292,17 +373,90 @@
                 appendMessage(text, 'user');
                 socket.send(text);
                 messageInput.value = "";
+
+                // Show Typing Indicator
+                showTypingIndicator();
             } else {
-                alert("Server connection is not ready yet! Please wait a moment...");
+                alert("Connection is not ready yet!");
             }
         }
 
         function appendMessage(text, sender) {
+            const wrapper = document.createElement('div');
+            wrapper.classList.add('message-wrapper', sender);
+
             const msgDiv = document.createElement('div');
-            msgDiv.classList.add('message', sender);
+            msgDiv.classList.add('message');
             msgDiv.innerText = text;
-            chatBody.appendChild(msgDiv);
-            chatBody.scrollTop = chatBody.scrollHeight; // Auto scroll to bottom
+
+            const metaDiv = document.createElement('div');
+            metaDiv.classList.add('meta-info');
+            metaDiv.innerText = getCurrentTime() + (sender === 'user' ? ' • Delivered' : '');
+
+            wrapper.appendChild(msgDiv);
+            wrapper.appendChild(metaDiv);
+            chatBody.appendChild(wrapper);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            if (typingIndicatorEl) return;
+
+            typingIndicatorEl = document.createElement('div');
+            typingIndicatorEl.classList.add('message-wrapper', 'bot');
+            typingIndicatorEl.id = 'typingIndicatorWrapper';
+
+            typingIndicatorEl.innerHTML = `
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            chatBody.appendChild(typingIndicatorEl);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            if (typingIndicatorEl) {
+                typingIndicatorEl.remove();
+                typingIndicatorEl = null;
+            }
+        }
+
+        function updateUserSeenStatus() {
+            const userMetas = chatBody.querySelectorAll('.message-wrapper.user .meta-info');
+            if (userMetas.length > 0) {
+                const lastMeta = userMetas[userMetas.length - 1];
+                const timeOnly = lastMeta.innerText.split(' • ')[0];
+                lastMeta.innerText = `${timeOnly} • Seen ✓`;
+            }
+        }
+
+        function getCurrentTime() {
+            const now = new Date();
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            return `${hours}:${minutes} ${ampm}`;
+        }
+
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // Clear queue
+                
+                // Remove emojis for cleaner voice output
+                const cleanText = text.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '');
+                
+                const utterance = new SpeechSynthesisUtterance(cleanText);
+                utterance.rate = 1.0;
+                utterance.pitch = 1.1; // Friendly tone
+
+                window.speechSynthesis.speak(utterance);
+            }
         }
 
         // Event Listeners
