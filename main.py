@@ -5,7 +5,7 @@ import google.generativeai as genai
 
 app = FastAPI()
 
-# Render-এর Environment Variable থেকে সিকিউরভাবে API Key নেওয়া
+# Render-এর Environment Variable থেকে সিকিউরভাবে API Key নেওয়া
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 if GEMINI_API_KEY:
@@ -43,7 +43,7 @@ DYNAMIC RESPONSE LENGTH RULES (STRICTLY FOLLOW BASED ON USER MOOD):
 Adapt naturally to the tone, romantic hints, and emotion of the user's text!
 """
 
-# Gemini 3.5 Flash Lite মডেল তৈরি
+# Gemini 3.5 Flash Lite মডেল
 model = genai.GenerativeModel(
     model_name="gemini-3.5-flash-lite",
     system_instruction=system_instruction
@@ -51,7 +51,6 @@ model = genai.GenerativeModel(
 
 @app.get("/")
 async def read_root():
-    # সরাসরি index.html ফাইলটি লোড করবে
     return FileResponse("index.html")
 
 @app.websocket("/ws/chat")
@@ -60,21 +59,23 @@ async def websocket_endpoint(websocket: WebSocket):
     print("User connected to real-time chat!")
 
     try:
-        # নতুন চ্যাট সেশন শুরু
         chat = model.start_chat(history=[])
 
         while True:
             user_msg = await websocket.receive_text()
             
-            # Simple server-side privacy keyword check
             lower_msg = user_msg.lower()
             privacy_keywords = ["gf", "girlfriend", "partner", "premika", "bou", "relationship"]
             
             if any(keyword in lower_msg for keyword in privacy_keywords):
                 await websocket.send_text("Aww, you know I can't talk about private relationship details, silly! Let's just talk about us... 😉❤️")
             else:
-                response = chat.send_message(user_msg)
-                await websocket.send_text(response.text)
+                try:
+                    response = chat.send_message(user_msg)
+                    await websocket.send_text(response.text)
+                except Exception as api_err:
+                    print(f"Gemini API Error: {api_err}")
+                    await websocket.send_text("Sorry dear, API-তে ঝামেলা হচ্ছে! API Key ঠিক আছে তো? 🙈")
 
     except WebSocketDisconnect:
         print("User disconnected")
@@ -83,4 +84,4 @@ async def websocket_endpoint(websocket: WebSocket):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
