@@ -1,849 +1,320 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aria - AI Companion</title>
     <style>
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        html, body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #0d0714;
-            position: fixed;
-        }
-
         body {
+            background-color: #0f0a15;
+            color: #ffffff;
             display: flex;
             justify-content: center;
             align-items: center;
+            min-height: 100vh;
+            padding: 20px;
         }
 
-        #bgCanvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        .ambient-bg {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.45;
-            animation: floatOrb 8s infinite alternate ease-in-out;
-        }
-
-        .orb-1 { width: 320px; height: 320px; background: radial-gradient(circle, #ff2a70, transparent); top: 10%; left: 10%; animation-duration: 9s; }
-        .orb-2 { width: 380px; height: 380px; background: radial-gradient(circle, #00d2ff, transparent); bottom: 10%; right: 10%; animation-duration: 11s; }
-        .orb-3 { width: 250px; height: 250px; background: radial-gradient(circle, #9b51e0, transparent); top: 40%; right: 25%; animation-duration: 7s; }
-        .orb-4 { width: 280px; height: 280px; background: radial-gradient(circle, #ff758c, transparent); bottom: 30%; left: 20%; animation-duration: 10s; }
-
-        @keyframes floatOrb {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(40px, -30px) scale(1.15); }
-            100% { transform: translate(-30px, 40px) scale(0.9); }
-        }
-
-        /* --- Intro Screen --- */
-        #intro-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(13, 7, 20, 0.95);
-            backdrop-filter: blur(20px);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            transition: opacity 0.8s ease, visibility 0.8s ease;
-        }
-
-        .loader-content {
-            position: relative;
-            width: 110px;
-            height: 110px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 22px;
-        }
-
-        .intro-avatar {
-            font-size: 45px;
-            animation: pulse 2s infinite ease-in-out;
-            filter: drop-shadow(0 0 10px rgba(0, 210, 255, 0.6));
-        }
-
-        .glowing-ring {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            border: 3px solid transparent;
-            border-top-color: #00d2ff;
-            border-right-color: #ff2a70;
-            border-bottom-color: #ff758c;
-            animation: spin 1.4s linear infinite;
-            box-shadow: 0 0 25px rgba(0, 210, 255, 0.5);
-        }
-
-        .intro-title {
-            color: #fff;
-            font-size: 34px;
-            font-weight: 800;
-            letter-spacing: 6px;
-            margin-bottom: 8px;
-            background: linear-gradient(135deg, #ffffff, #ff758c, #00d2ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 20px rgba(255, 117, 140, 0.3);
-        }
-
-        .intro-subtitle {
-            color: rgba(255, 255, 255, 0.75);
-            font-size: 13.5px;
-            letter-spacing: 1px;
-            font-weight: 400;
-        }
-
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes pulse { 0%, 100% { transform: scale(0.92); opacity: 0.85; } 50% { transform: scale(1.12); opacity: 1; } }
-
-        #intro-screen.fade-out {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-        }
-
-        /* --- Chat Container --- */
         .chat-card {
-            position: relative;
-            z-index: 10;
-            width: 420px;
-            max-width: 100%;
-            height: 680px;
-            max-height: 100%;
-            background: rgba(26, 15, 29, 0.85);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            width: 100%;
+            max-width: 420px;
+            height: 650px;
+            background: linear-gradient(180deg, #1d132b 0%, #110b1a 100%);
             border-radius: 28px;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            opacity: 0;
-            transform: translateY(30px) scale(0.95);
-            transition: opacity 0.8s ease, transform 0.8s ease;
+            position: relative;
         }
 
-        @media (max-width: 480px) {
-            .chat-card {
-                width: 100%;
-                height: 100%;
-                border-radius: 0;
-                border: none;
-            }
-        }
-
-        .chat-card.visible {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-
-        .chat-header {
-            padding: 14px 18px;
+        /* Header */
+        .header {
+            padding: 18px 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            background: rgba(255, 255, 255, 0.02);
-            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .header-left {
+        .profile-info {
             display: flex;
             align-items: center;
             gap: 12px;
         }
 
-        .avatar-container {
-            position: relative;
-            width: 44px;
-            height: 44px;
-        }
-
         .avatar {
-            width: 100%;
-            height: 100%;
+            width: 45px;
+            height: 45px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #ff758c, #ff7eb3);
+            background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 22px;
-            box-shadow: 0 0 15px rgba(255, 117, 140, 0.4);
+            position: relative;
+            box-shadow: 0 4px 12px rgba(255, 117, 140, 0.4);
         }
 
         .status-dot {
-            position: absolute;
-            bottom: 2px;
-            right: 2px;
-            width: 11px;
-            height: 11px;
-            background-color: #00d2ff !important;
-            border: 2px solid #1a101d;
+            width: 10px;
+            height: 10px;
+            background-color: #ff4757;
+            border: 2px solid #1d132b;
             border-radius: 50%;
-            box-shadow: 0 0 8px rgba(0, 210, 255, 0.7) !important;
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            transition: background-color 0.3s;
         }
 
-        .header-info h2 {
-            color: #ffffff;
-            font-size: 16px;
+        .status-dot.active {
+            background-color: #2ed573;
+        }
+
+        .user-details h3 {
+            font-size: 18px;
             font-weight: 600;
         }
 
-        .header-info p {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 12px;
+        .user-details p {
+            font-size: 13px;
+            color: #a09cb0;
         }
 
-        .status-text-highlight {
-            color: rgba(255, 255, 255, 0.85);
-            font-weight: 500;
-        }
-
-        .voice-toggle-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+        .voice-btn {
+            background: #00a8ff;
+            color: white;
+            border: none;
+            padding: 8px 14px;
             border-radius: 20px;
-            padding: 6px 12px;
-            color: #fff;
             font-size: 12px;
+            font-weight: 600;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 168, 255, 0.3);
         }
 
-        .voice-toggle-btn.active {
-            background: linear-gradient(135deg, #00d2ff, #0072ff);
-            border-color: transparent;
-            box-shadow: 0 0 10px rgba(0, 210, 255, 0.4);
-        }
-
-        .chat-messages {
+        /* Chat Body */
+        .chat-body {
             flex: 1;
-            padding: 16px;
+            padding: 20px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 14px;
-            touch-action: pan-y;
-        }
-
-        .message-wrapper {
-            display: flex;
-            flex-direction: column;
-            max-width: 82%;
-            position: relative;
-            transition: transform 0.2s ease-out;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .message-wrapper.user {
-            align-self: flex-end;
-            align-items: flex-end;
-        }
-
-        .message-wrapper.aria {
-            align-self: flex-start;
-            align-items: flex-start;
-        }
-
-        .reply-quote {
-            background: rgba(0, 0, 0, 0.3);
-            border-left: 3px solid #00d2ff;
-            padding: 6px 10px;
-            border-radius: 8px;
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 4px;
-            max-width: 100%;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            gap: 12px;
+            scroll-behavior: smooth;
         }
 
         .message {
+            max-width: 80%;
             padding: 12px 16px;
-            border-radius: 20px;
+            border-radius: 18px;
             font-size: 14px;
-            line-height: 1.45;
+            line-height: 1.4;
             word-wrap: break-word;
         }
 
-        .aria-msg {
+        .message.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.bot {
+            align-self: flex-start;
             background: rgba(255, 255, 255, 0.08);
-            color: rgba(255, 255, 255, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-top-left-radius: 4px;
+            color: #e1e1e1;
+            border-bottom-left-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .user-msg {
-            background: linear-gradient(135deg, #ff2a70, #ff4e50);
-            color: #ffffff;
-            border-top-right-radius: 4px;
-            box-shadow: 0 4px 15px rgba(255, 42, 112, 0.3);
-        }
-
-        .msg-meta {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 3px;
-            padding: 0 4px;
-        }
-
-        .msg-time {
-            font-size: 10px;
-            color: rgba(255, 255, 255, 0.4);
-        }
-
-        .seen-status {
-            font-size: 10px;
-            color: rgba(255, 255, 255, 0.45);
-            font-weight: 500;
-        }
-
-        .typing-indicator {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 12px 16px;
-        }
-
-        .typing-dot {
-            width: 7px;
-            height: 7px;
-            background-color: rgba(255, 255, 255, 0.7);
-            border-radius: 50%;
-            animation: bounce 1.4s infinite ease-in-out both;
-        }
-
-        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
-        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
-
-        @keyframes bounce {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1); }
-        }
-
-        .reply-preview-bar {
-            display: none;
-            padding: 8px 14px;
-            background: rgba(0, 0, 0, 0.5);
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-            border-left: 3px solid #ff4e50;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .reply-preview-bar .reply-text {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 85%;
-        }
-
-        .reply-preview-bar .cancel-reply-btn {
-            background: none;
-            border: none;
-            color: #ff4e50;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        .chat-footer-container {
-            display: flex;
-            flex-direction: column;
-            background: rgba(0, 0, 0, 0.4);
+        /* Input Area */
+        .input-container {
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.2);
             border-top: 1px solid rgba(255, 255, 255, 0.05);
-            flex-shrink: 0;
         }
 
-        .chat-footer {
-            padding: 10px 14px;
+        .input-box {
             display: flex;
             align-items: center;
             gap: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 71, 87, 0.4);
+            border-radius: 25px;
+            padding: 5px 8px 5px 18px;
         }
 
-        .input-wrapper {
+        .input-box input {
             flex: 1;
-        }
-
-        .chat-input {
-            width: 100%;
-            padding: 12px 18px;
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 105, 180, 0.25);
-            border-radius: 30px;
-            color: #fff;
-            font-size: 14px;
+            background: transparent;
+            border: none;
             outline: none;
-            transition: all 0.3s ease;
+            color: white;
+            font-size: 14px;
         }
 
-        .chat-input:focus {
-            border-color: #ff4e50;
-            box-shadow: 0 0 12px rgba(255, 78, 80, 0.3);
+        .input-box input::placeholder {
+            color: #7a7585;
         }
 
         .send-btn {
-            width: 42px;
-            height: 42px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #ff4e50, #ff758c);
+            background: #ff4757;
             border: none;
-            cursor: pointer;
+            color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 12px rgba(255, 78, 80, 0.4);
-            flex-shrink: 0;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
         }
 
-        .send-btn svg {
-            width: 18px;
-            height: 18px;
-            fill: #fff;
+        .send-btn:hover {
+            transform: scale(1.05);
+            background: #ff6b81;
         }
 
-        .developer-credit-inline {
-            padding-bottom: 6px;
+        .footer-text {
             text-align: center;
-            font-size: 10.5px;
-            color: rgba(255, 255, 255, 0.45);
-            letter-spacing: 1.2px;
-            font-weight: 400;
-            text-transform: uppercase;
+            font-size: 11px;
+            color: #6a6575;
+            margin-top: 10px;
+            letter-spacing: 1px;
         }
 
-        .developer-credit-inline span {
-            color: #00d2ff;
+        .footer-text span {
+            color: #00a8ff;
             font-weight: 600;
-            text-shadow: 0 0 6px rgba(0, 210, 255, 0.6);
         }
     </style>
 </head>
 <body>
 
-    <div class="ambient-bg">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
-        <div class="orb orb-4"></div>
-    </div>
-
-    <canvas id="bgCanvas"></canvas>
-
-    <div id="intro-screen">
-        <div class="loader-content">
-            <div class="glowing-ring"></div>
-            <div class="intro-avatar">🦋</div>
-        </div>
-        <h1 class="intro-title">ARIA</h1>
-        <p class="intro-subtitle">Thinking only about you... 🦋</p>
-    </div>
-
     <div class="chat-card">
-        <div class="chat-header">
-            <div class="header-left">
-                <div class="avatar-container">
-                    <div class="avatar">🦋</div>
-                    <div class="status-dot"></div>
+        <!-- Header -->
+        <div class="header">
+            <div class="profile-info">
+                <div class="avatar">
+                    🦋
+                    <div class="status-dot" id="statusDot"></div>
                 </div>
-                <div class="header-info">
-                    <h2>Aria</h2>
-                    <p id="headerStatus">AI Companion • <span class="status-text-highlight" id="statusText">Connecting...</span> 🦋</p>
+                <div class="user-details">
+                    <h3>Aria</h3>
+                    <p>AI Companion • <span id="statusText">Connecting... 🦋</span></p>
                 </div>
             </div>
-            
-            <button class="voice-toggle-btn active" id="voiceToggleBtn" onclick="toggleVoice()">
-                🔊 Voice On
-            </button>
+            <button class="voice-btn">🔊 Voice On</button>
         </div>
 
-        <div class="chat-messages" id="chatBox"></div>
-
-        <div id="replyPreview" class="reply-preview-bar">
-            <span class="reply-text" id="replyPreviewText">Replying to message...</span>
-            <button class="cancel-reply-btn" onclick="cancelReply()">✕</button>
+        <!-- Chat Area -->
+        <div class="chat-body" id="chatBody">
+            <div class="message bot">
+                Hey there! I'm Aria ❤️ How are you feeling today?
+            </div>
         </div>
 
-        <div class="chat-footer-container">
-            <div class="chat-footer">
-                <div class="input-wrapper">
-                    <input type="text" id="userInput" class="chat-input" placeholder="Say something sweet..." onkeypress="handleKeyPress(event)">
-                </div>
-                <button class="send-btn" onclick="sendMessage()">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+        <!-- Input Area -->
+        <div class="input-container">
+            <div class="input-box">
+                <input type="text" id="messageInput" placeholder="Say something sweet..." autocomplete="off">
+                <button class="send-btn" id="sendBtn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                     </svg>
                 </button>
             </div>
-            <div class="developer-credit-inline">
-                Crafted with ❤️ by <span>Ashraful</span>
+            <div class="footer-text">
+                CRAFTED WITH ❤️ BY <span>ASHRAFUL</span>
             </div>
         </div>
     </div>
 
     <script>
-        // Smooth Loader Dismiss Logic (Fixes Hanging)
-        function hideIntroLoader() {
-            const intro = document.getElementById("intro-screen");
-            const chatCard = document.querySelector(".chat-card");
-            if (intro) {
-                intro.classList.add("fade-out");
-            }
-            if (chatCard) {
-                setTimeout(() => { chatCard.classList.add("visible"); }, 200);
-            }
-        }
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const chatBody = document.getElementById('chatBody');
+        const statusText = document.getElementById('statusText');
+        const statusDot = document.getElementById('statusDot');
 
-        // Hide intro after 1.5s automatically
-        setTimeout(hideIntroLoader, 1500);
+        // Dynamically detect Protocol (ws:// or wss://)
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}/ws/chat`;
 
-        /* --- Interactive Canvas Background --- */
-        const canvas = document.getElementById("bgCanvas");
-        const ctx = canvas.getContext("2d");
-
-        let particles = [];
-        const particleCount = 40;
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener("resize", resizeCanvas);
-        resizeCanvas();
-
-        class Particle {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.radius = Math.random() * 2 + 1;
-                this.vx = (Math.random() - 0.5) * 0.8;
-                this.vy = (Math.random() - 0.5) * 0.8;
-                this.color = Math.random() > 0.5 ? "rgba(0, 210, 255, " : "rgba(255, 117, 140, ";
-                this.alpha = Math.random() * 0.5 + 0.2;
-            }
-
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = this.color + this.alpha + ")";
-                ctx.fill();
-            }
-
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
-            }
-        }
-
-        function initParticles() {
-            particles = [];
-            for (let i = 0; i < particleCount; i++) {
-                particles.push(new Particle());
-            }
-        }
-
-        function animateCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => {
-                p.update();
-                p.draw();
-            });
-            requestAnimationFrame(animateCanvas);
-        }
-
-        initParticles();
-        animateCanvas();
-
-        /* --- Chat App Real-Time Logic --- */
-        let isVoiceEnabled = true;
-        let selectedReplyText = null;
-        let chatHistory = [];
-
-        function loadHistory() {
-            const saved = localStorage.getItem("aria_chat_history");
-            if (saved) {
-                try {
-                    chatHistory = JSON.parse(saved);
-                    chatHistory.forEach(msg => renderMessage(msg.sender, msg.text, msg.time, msg.replyTo, false));
-                } catch(e) {
-                    chatHistory = [];
-                }
-            }
-            if (chatHistory.length === 0) {
-                const initialText = "Hey handsome... I was just waiting for you ❤️ ✨";
-                const initialTime = getCurrentTime();
-                renderMessage("aria", initialText, initialTime, null, true);
-            }
-        }
-
-        function saveMessageToHistory(sender, text, time, replyTo) {
-            chatHistory.push({ sender, text, time, replyTo });
-            if (chatHistory.length > 50) chatHistory.shift();
-            localStorage.setItem("aria_chat_history", JSON.stringify(chatHistory));
-        }
-
-        function getCurrentTime() {
-            const now = new Date();
-            return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        }
-
-        loadHistory();
-
-        function toggleVoice() {
-            isVoiceEnabled = !isVoiceEnabled;
-            const btn = document.getElementById("voiceToggleBtn");
-            if (isVoiceEnabled) {
-                btn.classList.add("active");
-                btn.innerHTML = "🔊 Voice On";
-            } else {
-                btn.classList.remove("active");
-                btn.innerHTML = "🔇 Voice Off";
-                if ('speechSynthesis' in window) {
-                    window.speechSynthesis.cancel();
-                }
-            }
-        }
-
-        function speakAriaResponse(text) {
-            if (!isVoiceEnabled || !('speechSynthesis' in window)) return;
-            window.speechSynthesis.cancel();
-
-            const utterance = new SpeechSynthesisUtterance(text);
-            const hasBangla = /[\u0980-\u09FF]/.test(text);
-            const voices = window.speechSynthesis.getVoices();
-
-            if (hasBangla) {
-                utterance.lang = 'bn-BD';
-                const banglaVoice = voices.find(v => v.lang.includes('bn'));
-                if (banglaVoice) utterance.voice = banglaVoice;
-                utterance.pitch = 1.2;
-                utterance.rate = 0.9;
-            } else {
-                utterance.lang = 'en-US';
-                const femaleVoice = voices.find(v => 
-                    v.lang.includes('en') && 
-                    (v.name.includes('Female') || v.name.includes('Google') || v.name.includes('Zira'))
-                );
-                if (femaleVoice) utterance.voice = femaleVoice;
-                utterance.pitch = 1.2;
-                utterance.rate = 0.95;
-            }
-
-            window.speechSynthesis.speak(utterance);
-        }
-
-        // Automatic WebSocket Connection Protocol setup
-        const loc = window.location;
-        const wsProtocol = loc.protocol === "https:" ? "wss:" : "ws:";
-        const wsUrl = `${wsProtocol}//${loc.host}/ws/chat`;
-        
-        let ws = null;
-        const chatBox = document.getElementById("chatBox");
-        const userInput = document.getElementById("userInput");
-        const statusText = document.getElementById("statusText");
-        let typingElement = null;
+        let socket;
 
         function connectWebSocket() {
-            statusText.innerText = "Connecting...";
-            ws = new WebSocket(wsUrl);
+            socket = new WebSocket(wsUrl);
 
-            ws.onopen = function() {
-                statusText.innerText = "Active Now";
+            socket.onopen = function () {
+                console.log("WebSocket connected successfully!");
+                statusText.innerText = "Active Now 🦋";
+                statusDot.classList.add('active');
             };
 
-            ws.onmessage = function(event) {
-                removeTypingIndicator();
-                markLastMessageSeen();
-                const time = getCurrentTime();
-                renderMessage("aria", event.data, time, null, true);
-                speakAriaResponse(event.data);
+            socket.onmessage = function (event) {
+                appendMessage(event.data, 'bot');
             };
 
-            ws.onerror = function() {
-                statusText.innerText = "Connecting...";
+            socket.onclose = function () {
+                console.log("WebSocket disconnected. Retrying in 3 seconds...");
+                statusText.innerText = "Connecting... 🦋";
+                statusDot.classList.remove('active');
+                setTimeout(connectWebSocket, 3000); // Auto reconnect
             };
 
-            ws.onclose = function() {
-                statusText.innerText = "Reconnecting...";
-                setTimeout(connectWebSocket, 3000);
+            socket.onerror = function (err) {
+                console.error("WebSocket Error: ", err);
             };
         }
 
+        // Initialize Connection
         connectWebSocket();
 
-        function isPrivateInfoRequest(msg) {
-            const lowerMsg = msg.toLowerCase();
-            const keywords = ['gf', 'girlfriend', 'partner', 'lover', 'premika', 'bhomok', 'bou', 'biye', 'relationship'];
-            return keywords.some(keyword => lowerMsg.includes(keyword));
-        }
-
         function sendMessage() {
-            const message = userInput.value.trim();
-            if (message === "") return;
+            const text = messageInput.value.trim();
+            if (text === "") return;
 
-            const time = getCurrentTime();
-            renderMessage("user", message, time, selectedReplyText, true);
-            userInput.value = "";
-
-            if (isPrivateInfoRequest(message)) {
-                showTypingIndicator();
-                setTimeout(() => {
-                    removeTypingIndicator();
-                    markLastMessageSeen();
-                    const privateResponse = "Aww, you know I can't talk about private relationship details, silly! Let's just talk about us... 😉❤️";
-                    renderMessage("aria", privateResponse, getCurrentTime(), null, true);
-                    speakAriaResponse(privateResponse);
-                }, 800);
-                cancelReply();
-                return;
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                appendMessage(text, 'user');
+                socket.send(text);
+                messageInput.value = "";
+            } else {
+                alert("Server connection is not ready yet! Please wait a moment...");
             }
-
-            if (!ws || ws.readyState !== WebSocket.OPEN) {
-                alert("Connecting to server. Please try again in a moment!");
-                return;
-            }
-
-            let fullMessageToSend = message;
-            if (selectedReplyText) {
-                fullMessageToSend = `[Replying to: "${selectedReplyText}"]\n${message}`;
-            }
-
-            ws.send(fullMessageToSend);
-            cancelReply();
-            showTypingIndicator();
         }
 
-        function handleKeyPress(event) {
-            if (event.key === "Enter") {
+        function appendMessage(text, sender) {
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('message', sender);
+            msgDiv.innerText = text;
+            chatBody.appendChild(msgDiv);
+            chatBody.scrollTop = chatBody.scrollHeight; // Auto scroll to bottom
+        }
+
+        // Event Listeners
+        sendBtn.addEventListener('click', sendMessage);
+
+        messageInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
                 sendMessage();
             }
-        }
-
-        function renderMessage(sender, text, time, replyTo = null, saveToStorage = false) {
-            document.querySelectorAll('.seen-status').forEach(e => e.remove());
-
-            const wrapper = document.createElement("div");
-            wrapper.classList.add("message-wrapper", sender);
-
-            let replyQuoteHtml = replyTo ? `<div class="reply-quote">↩ ${escapeHtml(replyTo)}</div>` : "";
-            const msgClass = sender === "user" ? "user-msg" : "aria-msg";
-            
-            wrapper.innerHTML = `
-                ${replyQuoteHtml}
-                <div class="message ${msgClass}">${escapeHtml(text)}</div>
-                <div class="msg-meta">
-                    <span class="msg-time">${time}</span>
-                </div>
-            `;
-
-            chatBox.appendChild(wrapper);
-            scrollToBottom();
-
-            if (saveToStorage) {
-                saveMessageToHistory(sender, text, time, replyTo);
-            }
-        }
-
-        function setReplyTarget(text) {
-            selectedReplyText = text;
-            document.getElementById("replyPreviewText").innerText = `Replying to: "${text}"`;
-            document.getElementById("replyPreview").style.display = "flex";
-            userInput.focus();
-        }
-
-        function cancelReply() {
-            selectedReplyText = null;
-            document.getElementById("replyPreview").style.display = "none";
-        }
-
-        function markLastMessageSeen() {
-            const lastUserMsg = chatBox.querySelector(".message-wrapper.user:last-of-type .msg-meta");
-            if (lastUserMsg && !lastUserMsg.querySelector('.seen-status')) {
-                const seenDiv = document.createElement("span");
-                seenDiv.classList.add("seen-status");
-                seenDiv.innerText = " • Seen ✓";
-                lastUserMsg.appendChild(seenDiv);
-            }
-        }
-
-        function showTypingIndicator() {
-            if (typingElement) return;
-
-            typingElement = document.createElement("div");
-            typingElement.classList.add("message-wrapper", "aria");
-            typingElement.id = "typingBubble";
-            typingElement.innerHTML = `
-                <div class="message aria-msg typing-indicator">
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                </div>
-            `;
-            chatBox.appendChild(typingElement);
-            scrollToBottom();
-        }
-
-        function removeTypingIndicator() {
-            if (typingElement) {
-                typingElement.remove();
-                typingElement = null;
-            }
-        }
-
-        function scrollToBottom() {
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        function escapeHtml(text) {
-            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        }
+        });
     </script>
+
 </body>
 </html>
