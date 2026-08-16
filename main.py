@@ -1,15 +1,46 @@
 import os
+import requests
+import base64
+import json
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 import google.generativeai as genai
 
 app = FastAPI()
 
-# Render-এর Environment Variable থেকে সিকিউরভাবে API Key নেওয়া
+# Render-এর Environment Variable থেকে সিকিউরভাবে API Key নেওয়া
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
+
+# ElevenLabs Credentials
+ELEVENLABS_API_KEY = "sk_45333d10598c8e3fb8b74b1feb543c24bfc5b910a45db357"
+VOICE_ID = "21m00Tcm4TlvDq8ikWAM"  # Rachel (Sweet Female Voice)
+
+# ElevenLabs Voice Audio Generator Function
+def generate_voice_audio(text: str):
+    url = f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}"
+    headers = {
+        "Accept": "audio/mpeg",
+        "Content-Type": "application/json",
+        "xi-api-key": ELEVENLABS_API_KEY
+    }
+    data = {
+        "text": text,
+        "model_id": "eleven_multilingual_v2",  # বাংলা, হিন্দি ও ইংরেজি তিন ভাষাতেই প্রফেশনাল উচ্চারণ
+        "voice_settings": {
+            "stability": 0.5,
+            "similarity_boost": 0.75
+        }
+    }
+    try:
+        response = requests.post(url, json=data, headers=headers)
+        if response.status_code == 200:
+            return base64.b64encode(response.content).decode("utf-8")
+    except Exception as e:
+        print(f"ElevenLabs API Error: {e}")
+    return None
 
 # AI Companion Persona Instructions
 system_instruction = """
@@ -43,9 +74,9 @@ DYNAMIC RESPONSE LENGTH RULES (STRICTLY FOLLOW BASED ON USER MOOD):
 Adapt naturally to the tone, romantic hints, and emotion of the user's text!
 """
 
-# Gemini 3.5 Flash Lite মডেল
+# Gemini 1.5 Flash Model
 model = genai.GenerativeModel(
-    model_name="gemini-3.5-flash-lite",
+    model_name="gemini-1.5-flash",
     system_instruction=system_instruction
 )
 
@@ -68,14 +99,24 @@ async def websocket_endpoint(websocket: WebSocket):
             privacy_keywords = ["gf", "girlfriend", "partner", "premika", "bou", "relationship"]
             
             if any(keyword in lower_msg for keyword in privacy_keywords):
-                await websocket.send_text("Aww, you know I can't talk about private relationship details, silly! Let's just talk about us... 😉❤️")
+                ai_text = "Aww, you know I can't talk about private relationship details, silly! Let's just talk about us... 😉❤️"
             else:
                 try:
                     response = chat.send_message(user_msg)
-                    await websocket.send_text(response.text)
+                    ai_text = response.text
                 except Exception as api_err:
                     print(f"Gemini API Error: {api_err}")
-                    await websocket.send_text("Sorry dear, API-তে ঝামেলা হচ্ছে! API Key ঠিক আছে তো? 🙈")
+                    ai_text = "Sorry dear, API-তে ঝামেলা হচ্ছে! API Key ঠিক আছে তো? 🙈"
+
+            # ElevenLabs থেকে অডিও তৈরি করা
+            audio_base64 = generate_voice_audio(ai_text)
+
+            # JSON আকারে Response পাঠানো
+            payload = {
+                "text": ai_text,
+                "audio": audio_base64
+            }
+            await websocket.send_text(json.dumps(payload))
 
     except WebSocketDisconnect:
         print("User disconnected")
