@@ -26,13 +26,24 @@
             align-items: center;
         }
 
-        /* --- Ambient Background Particles --- */
+        /* --- Interactive Canvas Background --- */
+        #bgCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* --- Ambient Background Orbs --- */
         .ambient-bg {
             position: absolute;
             width: 100%;
             height: 100%;
             overflow: hidden;
-            z-index: 1;
+            z-index: 0;
             pointer-events: none;
         }
 
@@ -40,7 +51,7 @@
             position: absolute;
             border-radius: 50%;
             filter: blur(80px);
-            opacity: 0.5;
+            opacity: 0.45;
             animation: floatOrb 8s infinite alternate ease-in-out;
         }
 
@@ -278,7 +289,6 @@
             align-items: flex-start;
         }
 
-        /* Quoted/Replied message block */
         .reply-quote {
             background: rgba(0, 0, 0, 0.3);
             border-left: 3px solid #00d2ff;
@@ -468,6 +478,9 @@
         <div class="orb orb-4"></div>
     </div>
 
+    <!-- Canvas Animation -->
+    <canvas id="bgCanvas"></canvas>
+
     <div id="intro-screen">
         <div class="loader-content">
             <div class="glowing-ring"></div>
@@ -495,9 +508,7 @@
             </button>
         </div>
 
-        <div class="chat-messages" id="chatBox">
-            <!-- Messages render here -->
-        </div>
+        <div class="chat-messages" id="chatBox"></div>
 
         <div id="replyPreview" class="reply-preview-bar">
             <span class="reply-text" id="replyPreviewText">Replying to message...</span>
@@ -522,11 +533,119 @@
     </div>
 
     <script>
+        /* --- Interactive Particle Animation Background --- */
+        const canvas = document.getElementById("bgCanvas");
+        const ctx = canvas.getContext("2d");
+
+        let particles = [];
+        const particleCount = 45;
+        let mouse = { x: null, y: null, radius: 120 };
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener("resize", resizeCanvas);
+        resizeCanvas();
+
+        window.addEventListener("mousemove", (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        window.addEventListener("touchmove", (e) => {
+            if (e.touches.length > 0) {
+                mouse.x = e.touches[0].clientX;
+                mouse.y = e.touches[0].clientY;
+            }
+        });
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.radius = Math.random() * 2.5 + 1;
+                this.vx = (Math.random() - 0.5) * 0.8;
+                this.vy = (Math.random() - 0.5) * 0.8;
+                this.color = Math.random() > 0.5 ? "rgba(0, 210, 255, " : "rgba(255, 117, 140, ";
+                this.alpha = Math.random() * 0.5 + 0.2;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color + this.alpha + ")";
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color + "0.8)";
+                ctx.fill();
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+
+                if (mouse.x && mouse.y) {
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < mouse.radius) {
+                        let force = (mouse.radius - distance) / mouse.radius;
+                        this.x -= (dx / distance) * force * 3;
+                        this.y -= (dy / distance) * force * 3;
+                    }
+                }
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function connectParticles() {
+            for (let a = 0; a < particles.length; a++) {
+                for (let b = a + 1; b < particles.length; b++) {
+                    let dx = particles[a].x - particles[b].x;
+                    let dy = particles[a].y - particles[b].y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 110) {
+                        let opacity = 1 - distance / 110;
+                        ctx.strokeStyle = `rgba(0, 210, 255, ${opacity * 0.15})`;
+                        ctx.lineWidth = 0.8;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[a].x, particles[a].y);
+                        ctx.lineTo(particles[b].x, particles[b].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function animateCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            connectParticles();
+            requestAnimationFrame(animateCanvas);
+        }
+
+        initParticles();
+        animateCanvas();
+
+        /* --- Chat App Logic --- */
         let isVoiceEnabled = true;
         let selectedReplyText = null;
-        let chatHistory = []; // Local history storage
+        let chatHistory = [];
 
-        // Load History from LocalStorage
         function loadHistory() {
             const saved = localStorage.getItem("aria_chat_history");
             if (saved) {
@@ -538,7 +657,6 @@
                 }
             }
             if (chatHistory.length === 0) {
-                // Default Welcome Message
                 const initialText = "Hey Sweetheart ❤️! I am here for you to listen.";
                 const initialTime = getCurrentTime();
                 renderMessage("aria", initialText, initialTime, null, true);
@@ -547,7 +665,7 @@
 
         function saveMessageToHistory(sender, text, time, replyTo) {
             chatHistory.push({ sender, text, time, replyTo });
-            if (chatHistory.length > 50) chatHistory.shift(); // Keep last 50 messages
+            if (chatHistory.length > 50) chatHistory.shift();
             localStorage.setItem("aria_chat_history", JSON.stringify(chatHistory));
         }
 
@@ -556,7 +674,6 @@
             return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
 
-        // Intro Screen
         window.addEventListener("load", () => {
             loadHistory();
             setTimeout(() => {
@@ -568,7 +685,6 @@
             }, 1800); 
         });
 
-        // Viewport Adjustment for Mobile Keyboards
         if (window.visualViewport) {
             function updateViewport() {
                 document.body.style.height = window.visualViewport.height + "px";
@@ -576,10 +692,9 @@
             }
             window.visualViewport.addEventListener("resize", updateViewport);
             window.visualViewport.addEventListener("scroll", updateViewport);
-            updateViewport();
+ updatesViewport();
         }
 
-        // Toggle Voice On/Off
         function toggleVoice() {
             isVoiceEnabled = !isVoiceEnabled;
             const btn = document.getElementById("voiceToggleBtn");
@@ -595,7 +710,6 @@
             }
         }
 
-        // Language-Aware Female Text-To-Speech
         function speakAriaResponse(text) {
             if (!isVoiceEnabled || !('speechSynthesis' in window)) return;
 
@@ -631,7 +745,6 @@
             };
         }
 
-        // WebSocket Connection Manager
         const wsUrl = "wss://aria-ai-eklr.onrender.com/ws/chat";
         let ws = null;
         const chatBox = document.getElementById("chatBox");
@@ -701,7 +814,6 @@
             }
         }
 
-        // Render Message Function with Swipe-to-Reply
         function renderMessage(sender, text, time, replyTo = null, saveToStorage = false) {
             document.querySelectorAll('.seen-status').forEach(e => e.remove());
 
@@ -730,7 +842,6 @@
                 saveMessageToHistory(sender, text, time, replyTo);
             }
 
-            // Enable Touch / Mouse Swipe or Click to Reply
             enableSwipeToReply(wrapper, text);
         }
 
@@ -760,7 +871,6 @@
                 currentX = 0;
             });
 
-            // Double Click for Desktop users
             element.addEventListener('dblclick', () => {
                 setReplyTarget(text);
             });
