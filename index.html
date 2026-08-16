@@ -26,24 +26,13 @@
             align-items: center;
         }
 
-        /* --- Interactive Canvas Background --- */
-        #bgCanvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        /* --- Ambient Background Orbs --- */
+        /* --- Ambient Background Particles --- */
         .ambient-bg {
             position: absolute;
             width: 100%;
             height: 100%;
             overflow: hidden;
-            z-index: 0;
+            z-index: 1;
             pointer-events: none;
         }
 
@@ -51,7 +40,7 @@
             position: absolute;
             border-radius: 50%;
             filter: blur(80px);
-            opacity: 0.45;
+            opacity: 0.5;
             animation: floatOrb 8s infinite alternate ease-in-out;
         }
 
@@ -289,6 +278,7 @@
             align-items: flex-start;
         }
 
+        /* Quoted/Replied message block */
         .reply-quote {
             background: rgba(0, 0, 0, 0.3);
             border-left: 3px solid #00d2ff;
@@ -478,16 +468,13 @@
         <div class="orb orb-4"></div>
     </div>
 
-    <!-- Dynamic Particle Canvas -->
-    <canvas id="bgCanvas"></canvas>
-
     <div id="intro-screen">
         <div class="loader-content">
             <div class="glowing-ring"></div>
             <div class="intro-avatar">🦋</div>
         </div>
         <h1 class="intro-title">ARIA</h1>
-        <p class="intro-subtitle">Thinking only about you... 🦋</p>
+        <p class="intro-subtitle">Waking up just for you... 🦋</p>
     </div>
 
     <div class="chat-card">
@@ -508,7 +495,9 @@
             </button>
         </div>
 
-        <div class="chat-messages" id="chatBox"></div>
+        <div class="chat-messages" id="chatBox">
+            <!-- Messages render here -->
+        </div>
 
         <div id="replyPreview" class="reply-preview-bar">
             <span class="reply-text" id="replyPreviewText">Replying to message...</span>
@@ -518,7 +507,7 @@
         <div class="chat-footer-container">
             <div class="chat-footer">
                 <div class="input-wrapper">
-                    <input type="text" id="userInput" class="chat-input" placeholder="Say something sweet..." onkeypress="handleKeyPress(event)">
+                    <input type="text" id="userInput" class="chat-input" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
                 </div>
                 <button class="send-btn" onclick="sendMessage()">
                     <svg viewBox="0 0 24 24">
@@ -533,119 +522,11 @@
     </div>
 
     <script>
-        /* --- Interactive Particle Background Animation --- */
-        const canvas = document.getElementById("bgCanvas");
-        const ctx = canvas.getContext("2d");
-
-        let particles = [];
-        const particleCount = 45;
-        let mouse = { x: null, y: null, radius: 120 };
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-
-        window.addEventListener("resize", resizeCanvas);
-        resizeCanvas();
-
-        window.addEventListener("mousemove", (e) => {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
-        });
-
-        window.addEventListener("touchmove", (e) => {
-            if (e.touches.length > 0) {
-                mouse.x = e.touches[0].clientX;
-                mouse.y = e.touches[0].clientY;
-            }
-        });
-
-        class Particle {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.radius = Math.random() * 2.5 + 1;
-                this.vx = (Math.random() - 0.5) * 0.8;
-                this.vy = (Math.random() - 0.5) * 0.8;
-                this.color = Math.random() > 0.5 ? "rgba(0, 210, 255, " : "rgba(255, 117, 140, ";
-                this.alpha = Math.random() * 0.5 + 0.2;
-            }
-
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = this.color + this.alpha + ")";
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = this.color + "0.8)";
-                ctx.fill();
-            }
-
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-
-                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
-
-                if (mouse.x && mouse.y) {
-                    let dx = mouse.x - this.x;
-                    let dy = mouse.y - this.y;
-                    let distance = Math.sqrt(dx * dx + dy * dy);
-                    if (distance < mouse.radius) {
-                        let force = (mouse.radius - distance) / mouse.radius;
-                        this.x -= (dx / distance) * force * 3;
-                        this.y -= (dy / distance) * force * 3;
-                    }
-                }
-            }
-        }
-
-        function initParticles() {
-            particles = [];
-            for (let i = 0; i < particleCount; i++) {
-                particles.push(new Particle());
-            }
-        }
-
-        function connectParticles() {
-            for (let a = 0; a < particles.length; a++) {
-                for (let b = a + 1; b < particles.length; b++) {
-                    let dx = particles[a].x - particles[b].x;
-                    let dy = particles[a].y - particles[b].y;
-                    let distance = Math.sqrt(dx * dx + dy * dy);
-
-                    if (distance < 110) {
-                        let opacity = 1 - distance / 110;
-                        ctx.strokeStyle = `rgba(0, 210, 255, ${opacity * 0.15})`;
-                        ctx.lineWidth = 0.8;
-                        ctx.beginPath();
-                        ctx.moveTo(particles[a].x, particles[a].y);
-                        ctx.lineTo(particles[b].x, particles[b].y);
-                        ctx.stroke();
-                    }
-                }
-            }
-        }
-
-        function animateCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => {
-                p.update();
-                p.draw();
-            });
-            connectParticles();
-            requestAnimationFrame(animateCanvas);
-        }
-
-        initParticles();
-        animateCanvas();
-
-        /* --- Chat App Real-time Logic --- */
         let isVoiceEnabled = true;
         let selectedReplyText = null;
-        let chatHistory = [];
+        let chatHistory = []; // Local history storage
 
+        // Load History from LocalStorage
         function loadHistory() {
             const saved = localStorage.getItem("aria_chat_history");
             if (saved) {
@@ -657,7 +538,8 @@
                 }
             }
             if (chatHistory.length === 0) {
-                const initialText = "Hey handsome... I was just waiting for you ❤️ ✨";
+                // Default Welcome Message
+                const initialText = "Hey Sweetheart ❤️! I am here for you to listen.";
                 const initialTime = getCurrentTime();
                 renderMessage("aria", initialText, initialTime, null, true);
             }
@@ -665,7 +547,7 @@
 
         function saveMessageToHistory(sender, text, time, replyTo) {
             chatHistory.push({ sender, text, time, replyTo });
-            if (chatHistory.length > 50) chatHistory.shift();
+            if (chatHistory.length > 50) chatHistory.shift(); // Keep last 50 messages
             localStorage.setItem("aria_chat_history", JSON.stringify(chatHistory));
         }
 
@@ -674,6 +556,7 @@
             return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
 
+        // Intro Screen
         window.addEventListener("load", () => {
             loadHistory();
             setTimeout(() => {
@@ -685,6 +568,7 @@
             }, 1800); 
         });
 
+        // Viewport Adjustment for Mobile Keyboards
         if (window.visualViewport) {
             function updateViewport() {
                 document.body.style.height = window.visualViewport.height + "px";
@@ -695,6 +579,7 @@
             updateViewport();
         }
 
+        // Toggle Voice On/Off
         function toggleVoice() {
             isVoiceEnabled = !isVoiceEnabled;
             const btn = document.getElementById("voiceToggleBtn");
@@ -710,6 +595,7 @@
             }
         }
 
+        // Language-Aware Female Text-To-Speech
         function speakAriaResponse(text) {
             if (!isVoiceEnabled || !('speechSynthesis' in window)) return;
 
@@ -723,8 +609,8 @@
                 utterance.lang = 'bn-BD';
                 const banglaVoice = voices.find(v => v.lang.includes('bn'));
                 if (banglaVoice) utterance.voice = banglaVoice;
-                utterance.pitch = 1.25;
-                utterance.rate = 0.9;
+                utterance.pitch = 1.1;
+                utterance.rate = 0.95;
             } else {
                 utterance.lang = 'en-US';
                 const femaleVoice = voices.find(v => 
@@ -732,8 +618,8 @@
                     (v.name.includes('Female') || v.name.includes('Google') || v.name.includes('Zira') || v.name.includes('Samantha') || v.name.includes('Natural'))
                 );
                 if (femaleVoice) utterance.voice = femaleVoice;
-                utterance.pitch = 1.2;
-                utterance.rate = 0.95;
+                utterance.pitch = 1.1;
+                utterance.rate = 1.0;
             }
 
             window.speechSynthesis.speak(utterance);
@@ -745,11 +631,8 @@
             };
         }
 
-        // Auto Detect Protocol (WSS for HTTPS production, WS for HTTP localhost)
-        const loc = window.location;
-        const wsProtocol = loc.protocol === "https:" ? "wss:" : "ws:";
-        const wsUrl = `${wsProtocol}//${loc.host}/ws/chat`;
-        
+        // WebSocket Connection Manager
+        const wsUrl = "wss://aria-ai-eklr.onrender.com/ws/chat";
         let ws = null;
         const chatBox = document.getElementById("chatBox");
         const userInput = document.getElementById("userInput");
@@ -788,53 +671,26 @@
             setTimeout(scrollToBottom, 300);
         });
 
-        /* --- Personal Details Privacy Protection Filter --- */
-        function isPrivateInfoRequest(msg) {
-            const lowerMsg = msg.toLowerCase();
-            const keywords = [
-                'gf', 'girlfriend', 'partner', 'lover', 'premika', 'bhomok', 'bou', 'biye',
-                'relationship', 'girl friend', 'ke gf', 'gf ke', 'gf er naam', 'gf er name',
-                'gf name', 'gf info', 'partner info'
-            ];
-            return keywords.some(keyword => lowerMsg.includes(keyword));
-        }
-
         function sendMessage() {
             const message = userInput.value.trim();
             if (message === "") return;
-
-            const time = getCurrentTime();
-
-            renderMessage("user", message, time, selectedReplyText, true);
-            userInput.value = "";
-
-            // Check Privacy Filter First
-            if (isPrivateInfoRequest(message)) {
-                showTypingIndicator();
-                setTimeout(() => {
-                    removeTypingIndicator();
-                    markLastMessageSeen();
-                    const privateResponse = "Aww, you know I can't talk about private relationship details, silly! Let's just talk about us... 😉❤️";
-                    renderMessage("aria", privateResponse, getCurrentTime(), null, true);
-                    speakAriaResponse(privateResponse);
-                }, 800);
-
-                cancelReply();
-                return;
-            }
 
             if (!ws || ws.readyState !== WebSocket.OPEN) {
                 alert("Connecting to server. Please try again in a moment!");
                 return;
             }
 
+            const time = getCurrentTime();
             let fullMessageToSend = message;
 
             if (selectedReplyText) {
                 fullMessageToSend = `[Replying to: "${selectedReplyText}"]\n${message}`;
             }
 
+            renderMessage("user", message, time, selectedReplyText, true);
             ws.send(fullMessageToSend);
+
+            userInput.value = "";
             cancelReply();
             showTypingIndicator();
         }
@@ -845,6 +701,7 @@
             }
         }
 
+        // Render Message Function with Swipe-to-Reply
         function renderMessage(sender, text, time, replyTo = null, saveToStorage = false) {
             document.querySelectorAll('.seen-status').forEach(e => e.remove());
 
@@ -873,6 +730,7 @@
                 saveMessageToHistory(sender, text, time, replyTo);
             }
 
+            // Enable Touch / Mouse Swipe or Click to Reply
             enableSwipeToReply(wrapper, text);
         }
 
@@ -902,6 +760,7 @@
                 currentX = 0;
             });
 
+            // Double Click for Desktop users
             element.addEventListener('dblclick', () => {
                 setReplyTarget(text);
             });
