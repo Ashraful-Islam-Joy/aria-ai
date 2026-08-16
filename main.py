@@ -8,7 +8,7 @@ import google.generativeai as genai
 
 app = FastAPI()
 
-# Render-এর Environment Variable থেকে সিকিউরভাবে API Key নেওয়া
+# Render Environment Variable থেকে সিকিউরভাবে Gemini API Key নেওয়া
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 if GEMINI_API_KEY:
@@ -28,7 +28,7 @@ def generate_voice_audio(text: str):
     }
     data = {
         "text": text,
-        "model_id": "eleven_multilingual_v2",  # বাংলা, হিন্দি ও ইংরেজি তিন ভাষাতেই প্রফেশনাল উচ্চারণ
+        "model_id": "eleven_multilingual_v2",  # বাংলা, হিন্দি ও ইংরেজি তিন ভাষাতেই সঠিক উচ্চারণ
         "voice_settings": {
             "stability": 0.5,
             "similarity_boost": 0.75
@@ -74,7 +74,7 @@ DYNAMIC RESPONSE LENGTH RULES (STRICTLY FOLLOW BASED ON USER MOOD):
 Adapt naturally to the tone, romantic hints, and emotion of the user's text!
 """
 
-# Gemini 1.5 Flash Model
+# Gemini Model Setup
 model = genai.GenerativeModel(
     model_name="gemini-1.5-flash",
     system_instruction=system_instruction
@@ -111,7 +111,7 @@ async def websocket_endpoint(websocket: WebSocket):
             # ElevenLabs থেকে অডিও তৈরি করা
             audio_base64 = generate_voice_audio(ai_text)
 
-            # JSON আকারে Response পাঠানো
+            # JSON আকারে টেক্সট এবং অডিও ফ্রন্টএন্ডে পাঠানো
             payload = {
                 "text": ai_text,
                 "audio": audio_base64
