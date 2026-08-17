@@ -504,7 +504,7 @@
                 </div>
             </div>
             
-            <!-- Default Voice state set to OFF -->
+            <!-- Default Voice option set to OFF -->
             <button class="voice-toggle-btn" id="voiceToggleBtn" onclick="toggleVoice()">
                 🔇 Voice Off
             </button>
@@ -654,21 +654,15 @@
         let selectedReplyText = null;
         let chatHistory = [];
 
+        // Updated loadHistory function to auto-clean chat on page refresh
         function loadHistory() {
-            const saved = localStorage.getItem("aria_chat_history");
-            if (saved) {
-                try {
-                    chatHistory = JSON.parse(saved);
-                    chatHistory.forEach(msg => renderMessage(msg.sender, msg.text, msg.time, msg.replyTo, false, msg.seen || false));
-                } catch(e) {
-                    chatHistory = [];
-                }
-            }
-            if (chatHistory.length === 0) {
-                const initialText = "Hey Sweetheart ❤️! I am here for you to listen.";
-                const initialTime = getCurrentTime();
-                renderMessage("aria", initialText, initialTime, null, true);
-            }
+            localStorage.removeItem("aria_chat_history");
+            chatHistory = [];
+            if (chatBox) chatBox.innerHTML = "";
+
+            const initialText = "Hey Sweetheart ❤️! I am here for you to listen.";
+            const initialTime = getCurrentTime();
+            renderMessage("aria", initialText, initialTime, null, false);
         }
 
         function saveMessageToHistory(sender, text, time, replyTo, seen = false) {
@@ -939,7 +933,6 @@
                 lastUserMeta.appendChild(seenDiv);
             }
 
-            // Update status in LocalStorage history
             if (chatHistory.length > 0) {
                 for (let i = chatHistory.length - 1; i >= 0; i--) {
                     if (chatHistory[i].sender === "user") {
