@@ -137,6 +137,7 @@
         #intro-screen.fade-out {
             opacity: 0;
             visibility: hidden;
+            pointer-events: none;
         }
 
         /* --- Chat Container --- */
@@ -675,16 +676,26 @@
             return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
 
+        /* Safe Intro Hide Safeguard */
+        function hideIntro() {
+            const intro = document.getElementById("intro-screen");
+            const chatCard = document.querySelector(".chat-card");
+
+            if (intro && !intro.classList.contains("fade-out")) {
+                intro.classList.add("fade-out");
+                setTimeout(() => { 
+                    if (chatCard) chatCard.classList.add("visible"); 
+                }, 300);
+            }
+        }
+
         window.addEventListener("load", () => {
             loadHistory();
-            setTimeout(() => {
-                const intro = document.getElementById("intro-screen");
-                const chatCard = document.querySelector(".chat-card");
-
-                intro.classList.add("fade-out");
-                setTimeout(() => { chatCard.classList.add("visible"); }, 300);
-            }, 1800); 
+            setTimeout(hideIntro, 1200);
         });
+
+        // Backup safeguard in case load event hangs
+        setTimeout(hideIntro, 2500);
 
         if (window.visualViewport) {
             function updateViewport() {
@@ -693,7 +704,7 @@
             }
             window.visualViewport.addEventListener("resize", updateViewport);
             window.visualViewport.addEventListener("scroll", updateViewport);
-            updateViewport(); // Fixed typo here
+            updateViewport();
         }
 
         function toggleVoice() {
