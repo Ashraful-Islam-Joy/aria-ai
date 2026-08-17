@@ -342,8 +342,8 @@
 
         .seen-status {
             font-size: 10px;
-            color: rgba(255, 255, 255, 0.45);
-            font-weight: 500;
+            color: #00d2ff;
+            font-weight: 600;
         }
 
         .typing-indicator {
@@ -535,7 +535,7 @@
     </div>
 
     <script>
-        /* --- DOM Elements (Declared FIRST to prevent TDZ Errors) --- */
+        /* --- DOM Elements --- */
         const chatBox = document.getElementById("chatBox");
         const userInput = document.getElementById("userInput");
         const statusText = document.getElementById("statusText");
@@ -658,7 +658,7 @@
             if (saved) {
                 try {
                     chatHistory = JSON.parse(saved);
-                    chatHistory.forEach(msg => renderMessage(msg.sender, msg.text, msg.time, msg.replyTo, false));
+                    chatHistory.forEach(msg => renderMessage(msg.sender, msg.text, msg.time, msg.replyTo, false, msg.seen || false));
                 } catch(e) {
                     chatHistory = [];
                 }
@@ -670,8 +670,8 @@
             }
         }
 
-        function saveMessageToHistory(sender, text, time, replyTo) {
-            chatHistory.push({ sender, text, time, replyTo });
+        function saveMessageToHistory(sender, text, time, replyTo, seen = false) {
+            chatHistory.push({ sender, text, time, replyTo, seen });
             if (chatHistory.length > 50) chatHistory.shift();
             localStorage.setItem("aria_chat_history", JSON.stringify(chatHistory));
         }
@@ -849,9 +849,7 @@
             }
         }
 
-        function renderMessage(sender, text, time, replyTo = null, saveToStorage = false) {
-            document.querySelectorAll('.seen-status').forEach(e => e.remove());
-
+        function renderMessage(sender, text, time, replyTo = null, saveToStorage = false, isSeen = false) {
             const wrapper = document.createElement("div");
             wrapper.classList.add("message-wrapper", sender);
 
@@ -861,12 +859,13 @@
             }
 
             const msgClass = sender === "user" ? "user-msg" : "aria-msg";
+            const seenHtml = (sender === "user" && isSeen) ? `<span class="seen-status"> • Seen ✓</span>` : "";
             
             wrapper.innerHTML = `
                 ${replyQuoteHtml}
                 <div class="message ${msgClass}">${escapeHtml(text)}</div>
                 <div class="msg-meta">
-                    <span class="msg-time">${time}</span>
+                    <span class="msg-time">${time}</span>${seenHtml}
                 </div>
             `;
 
@@ -876,7 +875,7 @@
             }
 
             if (saveToStorage) {
-                saveMessageToHistory(sender, text, time, replyTo);
+                saveMessageToHistory(sender, text, time, replyTo, isSeen);
             }
 
             enableSwipeToReply(wrapper, text);
@@ -931,12 +930,23 @@
 
         function markLastMessageSeen() {
             if (!chatBox) return;
-            const lastUserMsg = chatBox.querySelector(".message-wrapper.user:last-of-type .msg-meta");
-            if (lastUserMsg && !lastUserMsg.querySelector('.seen-status')) {
+            const lastUserMeta = chatBox.querySelector(".message-wrapper.user:last-of-type .msg-meta");
+            if (lastUserMeta && !lastUserMeta.querySelector('.seen-status')) {
                 const seenDiv = document.createElement("span");
                 seenDiv.classList.add("seen-status");
                 seenDiv.innerText = " • Seen ✓";
-                lastUserMsg.appendChild(seenDiv);
+                lastUserMeta.appendChild(seenDiv);
+            }
+
+            // Update status in LocalStorage history
+            if (chatHistory.length > 0) {
+                for (let i = chatHistory.length - 1; i >= 0; i--) {
+                    if (chatHistory[i].sender === "user") {
+                        chatHistory[i].seen = true;
+                        break;
+                    }
+                }
+                localStorage.setItem("aria_chat_history", JSON.stringify(chatHistory));
             }
         }
 
