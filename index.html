@@ -263,6 +263,7 @@
             flex: 1;
             padding: 16px;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
             display: flex;
             flex-direction: column;
             gap: 14px;
@@ -692,7 +693,7 @@
             }
             window.visualViewport.addEventListener("resize", updateViewport);
             window.visualViewport.addEventListener("scroll", updateViewport);
- updatesViewport();
+            updateViewport(); // Fixed typo here
         }
 
         function toggleVoice() {
@@ -764,8 +765,17 @@
                 removeTypingIndicator();
                 markLastMessageSeen();
                 const time = getCurrentTime();
-                renderMessage("aria", event.data, time, null, true);
-                speakAriaResponse(event.data);
+
+                let ariaText = event.data;
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.text) ariaText = data.text;
+                } catch (e) {
+                    // Plain text response fallback
+                }
+
+                renderMessage("aria", ariaText, time, null, true);
+                speakAriaResponse(ariaText);
             };
 
             ws.onerror = function() {
@@ -846,29 +856,33 @@
         }
 
         function enableSwipeToReply(element, text) {
-            let startX = 0;
-            let currentX = 0;
+            let startX = 0, startY = 0;
+            let currentX = 0, currentY = 0;
 
             element.addEventListener('touchstart', (e) => {
                 startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
             }, { passive: true });
 
             element.addEventListener('touchmove', (e) => {
                 currentX = e.touches[0].clientX;
+                currentY = e.touches[0].clientY;
                 let diffX = currentX - startX;
-                if (diffX > 0 && diffX < 80) {
+                let diffY = Math.abs(currentY - startY);
+
+                if (diffX > 0 && diffX < 80 && diffY < 30) {
                     element.style.transform = `translateX(${diffX}px)`;
                 }
             }, { passive: true });
 
             element.addEventListener('touchend', () => {
                 let diffX = currentX - startX;
-                if (diffX > 40) {
+                let diffY = Math.abs(currentY - startY);
+                if (diffX > 40 && diffY < 30) {
                     setReplyTarget(text);
                 }
                 element.style.transform = `translateX(0px)`;
-                startX = 0;
-                currentX = 0;
+                startX = 0; startY = 0; currentX = 0; currentY = 0;
             });
 
             element.addEventListener('dblclick', () => {
