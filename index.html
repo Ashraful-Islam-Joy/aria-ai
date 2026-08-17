@@ -535,6 +535,11 @@
     </div>
 
     <script>
+        /* --- DOM Elements (Declared FIRST to prevent TDZ Errors) --- */
+        const chatBox = document.getElementById("chatBox");
+        const userInput = document.getElementById("userInput");
+        const statusText = document.getElementById("statusText");
+
         /* --- Interactive Particle Animation Background --- */
         const canvas = document.getElementById("bgCanvas");
         const ctx = canvas.getContext("2d");
@@ -702,7 +707,6 @@
             }
             window.visualViewport.addEventListener("resize", updateViewport);
             window.visualViewport.addEventListener("scroll", updateViewport);
-            updateViewport();
         }
 
         function toggleVoice() {
@@ -758,25 +762,21 @@
         const httpUrl = "https://aria-ai-eklr.onrender.com/";
         const wsUrl = "wss://aria-ai-eklr.onrender.com/ws/chat";
         let ws = null;
-        const chatBox = document.getElementById("chatBox");
-        const userInput = document.getElementById("userInput");
-        const statusText = document.getElementById("statusText");
         let typingElement = null;
 
-        // HTTP Ping to wake up Render server
         function wakeUpServer() {
             fetch(httpUrl, { mode: 'no-cors' }).catch(() => {});
         }
 
         function connectWebSocket() {
-            statusText.innerText = "Connecting...";
+            if (statusText) statusText.innerText = "Connecting...";
             wakeUpServer();
 
             try {
                 ws = new WebSocket(wsUrl);
 
                 ws.onopen = function() {
-                    statusText.innerText = "Active Now";
+                    if (statusText) statusText.innerText = "Active Now";
                 };
 
                 ws.onmessage = function(event) {
@@ -789,7 +789,7 @@
                         const data = JSON.parse(event.data);
                         if (data.text) ariaText = data.text;
                     } catch (e) {
-                        // Plain text response fallback
+                        // Plain text fallback
                     }
 
                     renderMessage("aria", ariaText, time, null, true);
@@ -797,24 +797,26 @@
                 };
 
                 ws.onerror = function() {
-                    statusText.innerText = "Connecting...";
+                    if (statusText) statusText.innerText = "Connecting...";
                 };
 
                 ws.onclose = function() {
-                    statusText.innerText = "Reconnecting...";
+                    if (statusText) statusText.innerText = "Reconnecting...";
                     setTimeout(connectWebSocket, 3000);
                 };
             } catch (e) {
-                statusText.innerText = "Connecting...";
+                if (statusText) statusText.innerText = "Connecting...";
                 setTimeout(connectWebSocket, 3000);
             }
         }
 
         connectWebSocket();
 
-        userInput.addEventListener("focus", () => {
-            setTimeout(scrollToBottom, 300);
-        });
+        if (userInput) {
+            userInput.addEventListener("focus", () => {
+                setTimeout(scrollToBottom, 300);
+            });
+        }
 
         function sendMessage() {
             const message = userInput.value.trim();
@@ -822,7 +824,7 @@
 
             if (!ws || ws.readyState !== WebSocket.OPEN) {
                 wakeUpServer();
-                alert("Server is starting up on Render. Please wait a few seconds until status changes to 'Active Now'!");
+                alert("Server is waking up on Render. Please wait a few seconds until status shows 'Active Now'!");
                 return;
             }
 
@@ -868,8 +870,10 @@
                 </div>
             `;
 
-            chatBox.appendChild(wrapper);
-            scrollToBottom();
+            if (chatBox) {
+                chatBox.appendChild(wrapper);
+                scrollToBottom();
+            }
 
             if (saveToStorage) {
                 saveMessageToHistory(sender, text, time, replyTo);
@@ -917,7 +921,7 @@
             selectedReplyText = text;
             document.getElementById("replyPreviewText").innerText = `Replying to: "${text}"`;
             document.getElementById("replyPreview").style.display = "flex";
-            userInput.focus();
+            if (userInput) userInput.focus();
         }
 
         function cancelReply() {
@@ -926,6 +930,7 @@
         }
 
         function markLastMessageSeen() {
+            if (!chatBox) return;
             const lastUserMsg = chatBox.querySelector(".message-wrapper.user:last-of-type .msg-meta");
             if (lastUserMsg && !lastUserMsg.querySelector('.seen-status')) {
                 const seenDiv = document.createElement("span");
@@ -936,7 +941,7 @@
         }
 
         function showTypingIndicator() {
-            if (typingElement) return;
+            if (typingElement || !chatBox) return;
 
             typingElement = document.createElement("div");
             typingElement.classList.add("message-wrapper", "aria");
@@ -960,7 +965,9 @@
         }
 
         function scrollToBottom() {
-            chatBox.scrollTop = chatBox.scrollHeight;
+            if (chatBox) {
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
         }
 
         function escapeHtml(text) {
