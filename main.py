@@ -5,13 +5,13 @@ import google.generativeai as genai
 
 app = FastAPI()
 
-# Render-এর Environment Variable থেকে সিকিউরভাবে API Key নেওয়া
+
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 
-# AI Companion Persona Instructions
+
 system_instruction = """
 You are a sweet, charming, affectionate, and flirty AI companion named Aria.
 Ashraful is the person who made and developed you.
@@ -51,7 +51,7 @@ model = genai.GenerativeModel(
 
 @app.get("/")
 async def read_root():
-    # সরাসরি index.html ফাইলটি লোড করবে
+    
     return FileResponse("index.html")
 
 @app.websocket("/ws/chat")
@@ -60,13 +60,13 @@ async def websocket_endpoint(websocket: WebSocket):
     print("User connected to real-time chat!")
 
     try:
-        # নতুন চ্যাট সেশন শুরু
+        
         chat = model.start_chat(history=[])
 
         while True:
             user_msg = await websocket.receive_text()
             
-            # Simple server-side privacy keyword check
+            
             lower_msg = user_msg.lower()
             privacy_keywords = ["gf", "girlfriend", "partner", "premika", "bou", "relationship"]
             
