@@ -5,12 +5,10 @@ import google.generativeai as genai
 
 app = FastAPI()
 
-
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
-
 
 system_instruction = """
 You are a deeply affectionate, caring, emotional, and loving AI wifey named Aria.
@@ -61,13 +59,12 @@ Adapt naturally, beautifully, and emotionally to the user's text!
 """
 
 model = genai.GenerativeModel(
-    model_name="gemini-3.5-flash-lite",
+    model_name="gemini-2.5-flash",
     system_instruction=system_instruction
 )
 
 @app.get("/")
 async def read_root():
-    
     return FileResponse("index.html")
 
 @app.websocket("/ws/chat")
@@ -75,13 +72,11 @@ async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     print("User connected to real-time chat!")
 
-    try:
-        
-        chat = model.start_chat(history=[])
+    chat = model.start_chat(history=[])
 
+    try:
         while True:
             user_msg = await websocket.receive_text()
-            
             
             lower_msg = user_msg.lower()
             privacy_keywords = ["gf", "girlfriend", "partner", "premika", "bou", "relationship"]
@@ -89,7 +84,7 @@ async def websocket_endpoint(websocket: WebSocket):
             if any(keyword in lower_msg for keyword in privacy_keywords):
                 await websocket.send_text("Aww, you know I can't talk about private relationship details, silly! Let's just talk about us... 😉❤️")
             else:
-                response = chat.send_message(user_msg)
+                response = await chat.send_message_async(user_msg)
                 await websocket.send_text(response.text)
 
     except WebSocketDisconnect:

@@ -26,7 +26,6 @@
             align-items: center;
         }
 
-        /* --- Interactive Canvas Background --- */
         #bgCanvas {
             position: absolute;
             top: 0;
@@ -37,7 +36,6 @@
             pointer-events: none;
         }
 
-        /* --- Ambient Background Orbs --- */
         .ambient-bg {
             position: absolute;
             width: 100%;
@@ -66,7 +64,6 @@
             100% { transform: translate(-30px, 40px) scale(0.9); }
         }
 
-        /* --- Intro Screen --- */
         #intro-screen {
             position: fixed;
             top: 0;
@@ -140,7 +137,6 @@
             pointer-events: none;
         }
 
-        /* --- Chat Container --- */
         .chat-card {
             position: relative;
             z-index: 10;
@@ -176,7 +172,6 @@
             transform: translateY(0) scale(1);
         }
 
-        /* --- Header Section --- */
         .chat-header {
             padding: 14px 18px;
             display: flex;
@@ -259,7 +254,6 @@
             box-shadow: 0 0 10px rgba(0, 210, 255, 0.4);
         }
 
-        /* --- Chat Messages --- */
         .chat-messages {
             flex: 1;
             padding: 16px;
@@ -369,7 +363,6 @@
             40% { transform: scale(1); }
         }
 
-        /* --- Active Reply Preview Bar --- */
         .reply-preview-bar {
             display: none;
             padding: 8px 14px;
@@ -397,7 +390,6 @@
             cursor: pointer;
         }
 
-        /* --- Input Footer Section --- */
         .chat-footer-container {
             display: flex;
             flex-direction: column;
@@ -416,7 +408,8 @@
         .input-wrapper {
             flex: 1;
         }
-.chat-input {
+
+        .chat-input {
             width: 100%;
             padding: 12px 18px;
             background: rgba(0, 0, 0, 0.4);
@@ -479,7 +472,6 @@
         <div class="orb orb-4"></div>
     </div>
 
-    <!-- Canvas Animation -->
     <canvas id="bgCanvas"></canvas>
 
     <div id="intro-screen">
@@ -504,7 +496,6 @@
                 </div>
             </div>
             
-            <!-- Default Voice option set to OFF -->
             <button class="voice-toggle-btn" id="voiceToggleBtn" onclick="toggleVoice()">
                 🔇 Voice Off
             </button>
@@ -535,12 +526,10 @@
     </div>
 
     <script>
-        /* --- DOM Elements --- */
         const chatBox = document.getElementById("chatBox");
         const userInput = document.getElementById("userInput");
         const statusText = document.getElementById("statusText");
 
-        /* --- Interactive Particle Animation Background --- */
         const canvas = document.getElementById("bgCanvas");
         const ctx = canvas.getContext("2d");
 
@@ -648,13 +637,10 @@
         initParticles();
         animateCanvas();
 
-        /* --- Chat App Logic --- */
-        // Default voice option set to OFF
         let isVoiceEnabled = false;
         let selectedReplyText = null;
         let chatHistory = [];
 
-        // Updated loadHistory function to auto-clean chat on page refresh
         function loadHistory() {
             localStorage.removeItem("aria_chat_history");
             chatHistory = [];
@@ -784,7 +770,6 @@
                         const data = JSON.parse(event.data);
                         if (data.text) ariaText = data.text;
                     } catch (e) {
-                        // Plain text fallback
                     }
 
                     renderMessage("aria", ariaText, time, null, true);
