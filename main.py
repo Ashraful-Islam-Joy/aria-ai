@@ -1,16 +1,16 @@
 import os
-import asyncio
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 import google.generativeai as genai
 
 app = FastAPI()
 
-# API Key Config
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
+
 
 system_instruction = """
 You are a deeply affectionate, caring, emotional, and loving AI wifey named Aria.
@@ -61,23 +61,27 @@ Adapt naturally, beautifully, and emotionally to the user's text!
 """
 
 model = genai.GenerativeModel(
-    model_name="gemini-2.5-flash",
+    model_name="gemini-3.5-flash-lite",
     system_instruction=system_instruction
 )
 
 @app.get("/")
 async def read_root():
+    
     return FileResponse("index.html")
 
 @app.websocket("/ws/chat")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-
-    chat = model.start_chat(history=[])
+    print("User connected to real-time chat!")
 
     try:
+        
+        chat = model.start_chat(history=[])
+
         while True:
             user_msg = await websocket.receive_text()
+            
             
             lower_msg = user_msg.lower()
             privacy_keywords = ["gf", "girlfriend", "partner", "premika", "bou", "relationship"]
@@ -85,18 +89,13 @@ async def websocket_endpoint(websocket: WebSocket):
             if any(keyword in lower_msg for keyword in privacy_keywords):
                 await websocket.send_text("Aww, you know I can't talk about private relationship details, silly! Let's just talk about us... 😉❤️")
             else:
-                try:
-                    # Run synchronous send_message in thread pool to prevent blocking asyncio loop
-                    response = await asyncio.to_thread(chat.send_message, user_msg)
-                    await websocket.send_text(response.text)
-                except Exception as api_err:
-                    print(f"Gemini Error: {api_err}")
-                    await websocket.send_text("Aww, network issue hothat hoye geche... abar ektu bolo to sweetheart? 🥺❤️")
+                response = chat.send_message(user_msg)
+                await websocket.send_text(response.text)
 
     except WebSocketDisconnect:
-        pass
+        print("User disconnected")
     except Exception as e:
-        print(f"WebSocket Error: {e}")
+        print(f"Error in WebSocket: {e}")
 
 if __name__ == "__main__":
     import uvicorn
