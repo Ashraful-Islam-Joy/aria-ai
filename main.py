@@ -5,10 +5,12 @@ import google.generativeai as genai
 
 app = FastAPI()
 
+
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
+
 
 system_instruction = """
 You are a deeply affectionate, caring, emotional, and loving AI wifey named Aria.
@@ -65,6 +67,7 @@ model = genai.GenerativeModel(
 
 @app.get("/")
 async def read_root():
+    
     return FileResponse("index.html")
 
 @app.websocket("/ws/chat")
@@ -73,10 +76,12 @@ async def websocket_endpoint(websocket: WebSocket):
     print("User connected to real-time chat!")
 
     try:
+        
         chat = model.start_chat(history=[])
 
         while True:
             user_msg = await websocket.receive_text()
+            
             
             lower_msg = user_msg.lower()
             privacy_keywords = ["gf", "girlfriend", "partner", "premika", "bou", "relationship"]
@@ -84,10 +89,8 @@ async def websocket_endpoint(websocket: WebSocket):
             if any(keyword in lower_msg for keyword in privacy_keywords):
                 await websocket.send_text("Aww, you know I can't talk about private relationship details, silly! Let's just talk about us... 😉❤️")
             else:
-                response_stream = await chat.send_message_async(user_msg, stream=True)
-                async for chunk in response_stream:
-                    if chunk.text:
-                        await websocket.send_text(chunk.text)
+                response = chat.send_message(user_msg)
+                await websocket.send_text(response.text)
 
     except WebSocketDisconnect:
         print("User disconnected")
