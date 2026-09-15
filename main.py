@@ -1,11 +1,13 @@
 import os
+import asyncio
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 import google.generativeai as genai
 
 app = FastAPI()
 
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+# API Key Config
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
@@ -70,7 +72,6 @@ async def read_root():
 @app.websocket("/ws/chat")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    print("User connected to real-time chat!")
 
     chat = model.start_chat(history=[])
 
@@ -84,13 +85,18 @@ async def websocket_endpoint(websocket: WebSocket):
             if any(keyword in lower_msg for keyword in privacy_keywords):
                 await websocket.send_text("Aww, you know I can't talk about private relationship details, silly! Let's just talk about us... 😉❤️")
             else:
-                response = await chat.send_message_async(user_msg)
-                await websocket.send_text(response.text)
+                try:
+                    # Run synchronous send_message in thread pool to prevent blocking asyncio loop
+                    response = await asyncio.to_thread(chat.send_message, user_msg)
+                    await websocket.send_text(response.text)
+                except Exception as api_err:
+                    print(f"Gemini Error: {api_err}")
+                    await websocket.send_text("Aww, network issue hothat hoye geche... abar ektu bolo to sweetheart? 🥺❤️")
 
     except WebSocketDisconnect:
-        print("User disconnected")
+        pass
     except Exception as e:
-        print(f"Error in WebSocket: {e}")
+        print(f"WebSocket Error: {e}")
 
 if __name__ == "__main__":
     import uvicorn
